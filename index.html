@@ -11,7 +11,7 @@
   <link rel="apple-touch-icon" href="icon-192.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MoMA ソリティア 1998 — Safari/PWA版 v1.0.1 全カード効果実装</title>
+<title>MoMA ソリティア 1998 — Safari/PWA版 v1.0.4 全カード効果実装</title>
 <style>
 :root{
   --bg:#0b1220;--panel:#111827;--panel2:#172033;--line:#334155;--text:#e5e7eb;
@@ -357,7 +357,7 @@ body{
 </div>
 
 <header>
-  <h1>MoMA ソリティア 1998 — Safari/PWA版 v1.0.1 全カード効果実装</h1>
+  <h1>MoMA ソリティア 1998 — Safari/PWA版 v1.0.4 全カード効果実装</h1>
   <div class="sub">Tommi Hovi / Pro Tour Rome 1998 — Excel不要・完全オフライン対応</div>
 </header>
 <div class="wrap">
@@ -462,7 +462,7 @@ body{
   </div>
 
   <div class="footer">
-    v1.0.1: デッキ内17種類すべての専用効果処理を実装。
+    v1.0.4: デッキ内17種類すべての専用効果処理を実装。
     Mox Diamond / Scroll Rack / Abeyance / Intuition / Power Sink / Mana Vault /
     Mind Over Matter / Time Spiral / Windfall / Stroke of Genius を含む。
     </div>
@@ -1088,8 +1088,8 @@ function loadState(ev){
 }
 
 
-const localCardImages = {"Ancient Tomb": "assets/cards/ancient-tomb.jpg", "City of Brass": "assets/cards/city-of-brass.jpg", "Tolarian Academy": "assets/cards/tolarian-academy.jpg", "Tundra": "assets/cards/tundra.jpg", "Volcanic Island": "assets/cards/volcanic-island.jpg", "Lotus Petal": "assets/cards/lotus-petal.jpg", "Mana Vault": "assets/cards/mana-vault.jpg", "Mox Diamond": "assets/cards/mox-diamond.jpg", "Scroll Rack": "assets/cards/scroll-rack.jpg", "Voltaic Key": "assets/cards/voltaic-key.jpg", "Mind Over Matter": "assets/cards/mind-over-matter.jpg", "Abeyance": "assets/cards/abeyance.jpg", "Intuition": "assets/cards/intuition.jpg", "Power Sink": "assets/cards/power-sink.jpg", "Stroke of Genius": "assets/cards/stroke-of-genius.jpg", "Time Spiral": "assets/cards/time-spiral.jpg", "Windfall": "assets/cards/windfall.jpg"};
-function cardImageUrl(name){ return localCardImages[name] || "assets/cards/card-back.jpg"; }
+const localCardImages = {"Ancient Tomb": "ancient-tomb.jpg", "City of Brass": "city-of-brass.jpg", "Tolarian Academy": "tolarian-academy.jpg", "Tundra": "tundra.jpg", "Volcanic Island": "volcanic-island.jpg", "Lotus Petal": "lotus-petal.jpg", "Mana Vault": "mana-vault.jpg", "Mox Diamond": "mox-diamond.jpg", "Scroll Rack": "scroll-rack.jpg", "Voltaic Key": "voltaic-key.jpg", "Mind Over Matter": "mind-over-matter.jpg", "Abeyance": "abeyance.jpg", "Intuition": "intuition.jpg", "Power Sink": "power-sink.jpg", "Stroke of Genius": "stroke-of-genius.jpg", "Time Spiral": "time-spiral.jpg", "Windfall": "windfall.jpg"};
+function cardImageUrl(name){ return localCardImages[name] || "card-back.jpg"; }
 function cardDisplayName(name){
   return (cardInfo[name] && cardInfo[name].jp) ? cardInfo[name].jp : name;
 }
