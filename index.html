@@ -1,0 +1,1208 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#020617">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MoMA Solitaire">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-192.png">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MoMA ソリティア 1998 — Safari/PWA版 v1.0.1 全カード効果実装</title>
+<style>
+:root{
+  --bg:#0b1220;--panel:#111827;--panel2:#172033;--line:#334155;--text:#e5e7eb;
+  --muted:#94a3b8;--blue:#2563eb;--indigo:#4f46e5;--green:#15803d;--red:#b91c1c;
+  --amber:#b45309;--purple:#7e22ce;--cyan:#0e7490;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--text)}
+header{padding:18px 24px;background:#020617;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+h1{margin:0;font-size:22px}
+.sub{color:var(--muted);font-size:13px;margin-top:4px}
+.wrap{max-width:1500px;margin:0 auto;padding:18px}
+.status{display:grid;grid-template-columns:repeat(8,minmax(95px,1fr));gap:8px;margin-bottom:12px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px}
+.stat b{display:block;font-size:18px;margin-top:2px}
+.section{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
+.section h2{font-size:14px;margin:0 0 10px;color:#cbd5e1}
+.zone{display:grid;grid-template-columns:repeat(6,minmax(130px,1fr));gap:8px}
+.card{min-height:78px;border:1px solid #475569;border-radius:10px;padding:10px;background:#0f172a;cursor:pointer;position:relative}
+.card:hover{outline:2px solid #64748b}
+.card.selected{outline:3px solid #60a5fa}
+.card.tapped{transform:rotate(2deg);opacity:.8}
+.card small{display:block;color:var(--muted);margin-top:6px}
+.card .tag{position:absolute;right:7px;top:7px;font-size:10px;color:#fca5a5}
+.controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+button{border:0;border-radius:9px;padding:9px 13px;color:white;background:#334155;font-weight:700;cursor:pointer}
+button:hover{filter:brightness(1.12)}
+.blue{background:var(--blue)} .indigo{background:var(--indigo)} .green{background:var(--green)}
+.red{background:var(--red)} .amber{background:var(--amber)} .purple{background:var(--purple)} .cyan{background:var(--cyan)}
+.grid2{display:grid;grid-template-columns:1.2fr .8fr;gap:14px}
+.mana{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.manaBox{background:#0f172a;border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
+.manaBox b{font-size:20px}
+.log{max-height:300px;overflow:auto;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#020617;padding:10px;border-radius:10px}
+.log div{padding:3px 0;border-bottom:1px solid #0f172a}
+input,select{background:#020617;color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px}
+.footer{color:var(--muted);font-size:12px;margin:16px 2px}
+@media(max-width:1000px){.status{grid-template-columns:repeat(4,1fr)}.zone{grid-template-columns:repeat(3,1fr)}.grid2{grid-template-columns:1fr}}
+
+@media(max-width:700px){
+  body{padding-bottom:84px}
+  header{padding:12px 14px}
+  h1{font-size:18px}
+  .sub{font-size:11px}
+  .wrap{padding:10px}
+  .status{grid-template-columns:repeat(2,1fr);gap:6px}
+  .stat{padding:8px}
+  .stat b{font-size:17px}
+  .section{padding:10px;margin-bottom:10px;border-radius:12px}
+  .section h2{font-size:13px}
+  .zone{
+    display:flex;
+    overflow-x:auto;
+    gap:8px;
+    scroll-snap-type:x mandatory;
+    padding-bottom:4px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .zone .card{
+    min-width:72vw;
+    max-width:72vw;
+    min-height:112px;
+    scroll-snap-align:start;
+    font-size:16px;
+    padding:14px;
+  }
+  .zone .card small{font-size:13px}
+  .controls{gap:7px}
+  .controls button{
+    flex:1 1 calc(50% - 8px);
+    min-height:48px;
+    font-size:14px;
+    padding:10px 8px;
+  }
+  .mana{grid-template-columns:repeat(3,1fr);gap:7px}
+  .manaBox{padding:8px}
+  .manaBox b{font-size:22px}
+  #cardDetail{
+    font-size:15px;
+    line-height:1.7;
+    min-height:120px!important;
+  }
+  .grid2{grid-template-columns:1fr}
+  .log{max-height:220px;font-size:11px}
+  .footer{font-size:11px}
+  .mobile-action-bar{
+    display:grid!important;
+    grid-template-columns:repeat(4,1fr);
+    gap:6px;
+    position:fixed;
+    left:0;right:0;bottom:0;
+    z-index:50;
+    padding:8px 8px calc(8px + env(safe-area-inset-bottom));
+    background:rgba(2,6,23,.96);
+    border-top:1px solid #334155;
+    backdrop-filter:blur(8px);
+  }
+  .mobile-action-bar button{
+    min-height:50px;
+    font-size:12px;
+    padding:7px 5px;
+    border-radius:10px;
+  }
+  .desktop-only-mobile-hide{display:none!important}
+}
+@media(min-width:701px){
+  .mobile-action-bar{display:none!important}
+}
+
+
+@media(max-width:700px){
+  #cardDetailSection{
+    position:fixed;
+    left:8px;
+    right:8px;
+    bottom:78px;
+    z-index:45;
+    margin:0;
+    max-height:48vh;
+    overflow:auto;
+    transform:translateY(calc(100% + 100px));
+    opacity:0;
+    pointer-events:none;
+    transition:transform .22s ease, opacity .22s ease;
+    box-shadow:0 -8px 30px rgba(0,0,0,.45);
+    border:1px solid #475569;
+    background:#111827;
+  }
+  #cardDetailSection.mobile-open{
+    transform:translateY(0);
+    opacity:1;
+    pointer-events:auto;
+  }
+  #cardDetailSection h2{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:8px;
+  }
+  #mobileCloseDetail{
+    display:inline-flex!important;
+    align-items:center;
+    justify-content:center;
+    width:36px;
+    min-width:36px;
+    height:36px;
+    border-radius:50%;
+    background:#334155;
+    color:#fff;
+    font-size:18px;
+    padding:0;
+  }
+}
+@media(min-width:701px){
+  #mobileCloseDetail{display:none!important}
+}
+
+
+/* v1.0 Card Image UI */
+.card.image-card{
+  position:relative;
+  overflow:hidden;
+  padding:0;
+  min-height:0;
+  aspect-ratio:488/680;
+  background:#020617;
+  border-radius:10px;
+  cursor:pointer;
+  user-select:none;
+  -webkit-user-select:none;
+  touch-action:manipulation;
+}
+.card.image-card img{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  border-radius:9px;
+  pointer-events:none;
+  background:#0f172a;
+}
+.card.image-card .fallback{
+  display:none;
+  position:absolute;
+  inset:0;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:8px;
+  font-size:12px;
+  line-height:1.3;
+  background:linear-gradient(160deg,#111827,#020617);
+}
+.card.image-card.image-failed img{display:none}
+.card.image-card.image-failed .fallback{display:flex}
+.card.image-card.selected{
+  outline:3px solid #38bdf8;
+  outline-offset:2px;
+  box-shadow:0 0 0 2px rgba(56,189,248,.25),0 0 20px rgba(56,189,248,.35);
+}
+.card.image-card.tapped{
+  transform:rotate(90deg) scale(.82);
+  margin-inline:8%;
+}
+.card-zone{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(92px,1fr));
+  gap:10px;
+}
+.card-zone.hand-zone{
+  grid-template-columns:repeat(auto-fill,minmax(84px,1fr));
+}
+@media(max-width:700px){
+  .zone.card-zone,
+  .zone.card-zone.hand-zone{
+    display:flex;
+    overflow-x:auto;
+    gap:8px;
+    scroll-snap-type:x proximity;
+    padding:4px 2px 10px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .zone.card-zone .card.image-card,
+  .zone.card-zone.hand-zone .card.image-card{
+    flex:0 0 108px;
+    min-width:108px;
+    max-width:108px;
+    min-height:151px;
+    height:auto;
+    scroll-snap-align:start;
+    padding:0;
+  }
+  .zone.card-zone .card.image-card.tapped{
+    flex-basis:108px;
+    min-width:108px;
+    max-width:108px;
+    transform:none;
+  }
+  .card.image-card.tapped img{
+    transform:rotate(90deg) scale(.73);
+  }
+}
+
+
+/* v1.0 Game UI */
+:root{
+  --panel:#0b1220;
+  --panel2:#0e1728;
+  --line:#26374d;
+  --accent:#16b8ff;
+}
+body{
+  background:
+    radial-gradient(circle at 20% 0%,rgba(14,60,90,.22),transparent 38%),
+    radial-gradient(circle at 90% 20%,rgba(22,55,95,.16),transparent 32%),
+    #050a12;
+}
+.wrap{max-width:1600px;margin:0 auto}
+#gameShell{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 390px;
+  gap:14px;
+  align-items:start;
+}
+#gameMain{min-width:0}
+#gameSide{
+  position:sticky;
+  top:12px;
+  max-height:calc(100vh - 24px);
+  overflow:auto;
+}
+.section{
+  background:linear-gradient(180deg,rgba(14,23,40,.97),rgba(8,15,27,.97));
+  border-color:var(--line);
+  box-shadow:0 8px 28px rgba(0,0,0,.18);
+}
+.section h2{letter-spacing:.02em}
+.card-zone.hand-zone{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding:8px 2px 12px;
+}
+.card-zone.hand-zone .card.image-card{
+  flex:0 0 105px;
+  width:105px;
+}
+.card-zone .card.image-card{
+  transition:transform .14s ease,box-shadow .14s ease;
+}
+.card-zone .card.image-card:hover{
+  transform:translateY(-5px);
+  box-shadow:0 10px 22px rgba(0,0,0,.35);
+}
+#battlefield.card-zone{
+  grid-template-columns:repeat(auto-fill,minmax(105px,1fr));
+}
+#cardDetailSection{
+  margin:0;
+  border-color:#31506e;
+}
+#cardDetail{
+  background:#07101c!important;
+}
+.card-detail-image{
+  width:100%;
+  max-width:330px;
+  aspect-ratio:488/680;
+  display:block;
+  margin:0 auto 12px;
+  object-fit:cover;
+  border-radius:12px;
+  border:1px solid #3b5874;
+  box-shadow:0 0 24px rgba(22,184,255,.12);
+}
+.v09-top-hint{
+  color:#8ca4bd;
+  font-size:12px;
+  margin-top:4px;
+}
+@media(max-width:980px){
+  #gameShell{display:block}
+  #gameSide{position:static;max-height:none}
+}
+@media(max-width:700px){
+  #gameSide{display:block}
+  #cardDetailSection{
+    position:fixed!important;
+    left:8px;right:8px;bottom:78px;
+    z-index:45;
+    max-height:58vh;
+    overflow:auto;
+  }
+  .card-detail-image{max-width:220px}
+}
+
+</style>
+</head>
+<body>
+
+<div id="pwaHint" style="display:none;background:#0f172a;border-bottom:1px solid #334155;padding:10px 14px;font-size:13px;line-height:1.5">
+  Safariで開いています。共有ボタン →「ホーム画面に追加」でアプリのように起動できます。
+</div>
+
+<header>
+  <h1>MoMA ソリティア 1998 — Safari/PWA版 v1.0.1 全カード効果実装</h1>
+  <div class="sub">Tommi Hovi / Pro Tour Rome 1998 — Excel不要・完全オフライン対応</div>
+</header>
+<div class="wrap">
+  <div class="status" id="status"></div>
+
+  <div class="section">
+    <h2>戦場</h2>
+    <div class="zone" id="battlefield" class="zone card-zone"></div>
+    <div class="controls">
+      <button class="indigo" onclick="activateSelected()">選択カードの能力を起動</button>
+      <button class="purple" onclick="toggleTapSelected()">タップ / アンタップ</button>
+      <button class="red" onclick="toGraveSelected()">墓地へ送る</button>
+      <button class="green" onclick="untapStep()">アンタップ・ステップ</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>手札 <span style="color:#38bdf8;font-weight:400">1回タップ＝詳細 / ダブルタップ＝プレイ</span><div class="v09-top-hint">カード画像はすべてアプリ内蔵。外部画像アクセスなし。</div> <span id="handPageInfo" style="color:#94a3b8;font-weight:400"></span></h2>
+    <div class="zone" id="hand" class="zone card-zone hand-zone"></div>
+    <div class="controls">
+      <button onclick="prevHand()">◀ 前ページ</button>
+      <button onclick="nextHand()">次ページ ▶</button>
+      <button class="blue" onclick="playSelected()">選択カードをプレイ</button>
+      <button class="red" onclick="discardSelected()">捨てる</button>
+      <button class="cyan" onclick="castSelected()">選択した呪文を唱える</button>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="section">
+      <h2>マナ・プール</h2>
+      <div class="mana" id="mana"></div>
+      <div class="controls">
+        <button onclick="addMana('W',1)">+W 白</button>
+        <button onclick="addMana('U',1)">+U 青</button>
+        <button onclick="addMana('B',1)">+B 黒</button>
+        <button onclick="addMana('R',1)">+R 赤</button>
+        <button onclick="addMana('G',1)">+G 緑</button>
+        <button onclick="addMana('C',1)">+C 無色</button>
+      </div>
+      <div class="controls">
+        <button onclick="spendMana('W')">-W</button>
+        <button onclick="spendMana('U')">-U</button>
+        <button onclick="spendMana('B')">-B</button>
+        <button onclick="spendMana('R')">-R</button>
+        <button onclick="spendMana('G')">-G</button>
+        <button onclick="spendMana('C')">-C</button>
+        <button class="red" onclick="resetMana()">マナをリセット</button>
+      </div>
+    </div>
+    <div class="section">
+      <h2>ゲーム操作</h2>
+      <div class="controls desktop-only-mobile-hide">
+        <button class="green" onclick="newGame()">新しいゲーム</button>
+        <button class="blue" onclick="draw(1,true)">1枚ドロー</button>
+        <button class="amber" onclick="endTurn()">ターン終了</button>
+        <button class="purple" onclick="undo()">1手戻す</button>
+        <button onclick="saveState()">セーブ</button>
+        <button onclick="document.getElementById('loadFile').click()">ロード</button>
+        <input id="loadFile" type="file" accept=".json" style="display:none" onchange="loadState(event)">
+      </div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="section">
+      <h2>墓地</h2>
+      <div class="zone" id="graveyard" class="zone card-zone"></div>
+    </div>
+    <div class="section">
+      <h2>追放</h2>
+      <div class="zone" id="exile" class="zone card-zone"></div>
+    </div>
+  </div>
+
+  <div class="section" id="cardDetailSection">
+    <h2>
+      <span>選択中のカード情報 <span style="color:#64748b;font-weight:400">（タップで選択）</span></span>
+      <button id="mobileCloseDetail" onclick="closeCardDetail()" aria-label="カード情報を閉じる">×</button>
+    </h2>
+    <div id="cardDetail" style="background:#020617;border:1px solid #334155;border-radius:10px;padding:14px;min-height:96px">
+      <div style="color:#64748b">カードを選択すると、ここに能力が表示されます。</div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="section">
+      <h2>一人回し統計</h2>
+      <div id="stats"></div>
+    </div>
+    <div class="section">
+      <h2>操作ログ</h2>
+      <div class="log" id="log"></div>
+    </div>
+  </div>
+
+  <div class="mobile-action-bar">
+    <button class="green" onclick="newGame()">新規</button>
+    <button class="blue" onclick="draw(1,true)">ドロー</button>
+    <button class="amber" onclick="endTurn()">終了</button>
+    <button class="purple" onclick="undo()">戻す</button>
+  </div>
+
+  <div class="footer">
+    v1.0.1: デッキ内17種類すべての専用効果処理を実装。
+    Mox Diamond / Scroll Rack / Abeyance / Intuition / Power Sink / Mana Vault /
+    Mind Over Matter / Time Spiral / Windfall / Stroke of Genius を含む。
+    </div>
+</div>
+
+<script>
+const decklist = [
+  [4,"Ancient Tomb"],[3,"City of Brass"],[4,"Tolarian Academy"],[4,"Tundra"],[4,"Volcanic Island"],
+  [4,"Lotus Petal"],[4,"Mana Vault"],[4,"Mox Diamond"],[2,"Scroll Rack"],[3,"Voltaic Key"],
+  [3,"Mind Over Matter"],[3,"Abeyance"],[3,"Intuition"],[3,"Power Sink"],
+  [4,"Stroke of Genius"],[4,"Time Spiral"],[4,"Windfall"]
+];
+
+const artifacts = new Set(["Lotus Petal","Mana Vault","Mox Diamond","Scroll Rack","Voltaic Key"]);
+const lands = new Set(["Ancient Tomb","City of Brass","Tolarian Academy","Tundra","Volcanic Island"]);
+const colors = ["W","U","B","R","G","C"];
+
+let state, undoState=null, selected={zone:null,index:null};
+
+
+const cardInfo = {
+  "Ancient Tomb":{
+    jp:"古えの墳墓", type:"土地", cost:"—",
+    text:"{T}: {C}{C}を加える。あなたは2点のライフを失う。"
+  },
+  "City of Brass":{
+    jp:"真鍮の都", type:"土地", cost:"—",
+    text:"{T}: 好きな色1色のマナ1点を加える。真鍮の都がタップ状態になるたび、あなたに1点のダメージを与える。"
+  },
+  "Tolarian Academy":{
+    jp:"トレイリアのアカデミー", type:"伝説の土地", cost:"—",
+    text:"{T}: あなたがコントロールするアーティファクト1つにつき{U}を加える。"
+  },
+  "Tundra":{
+    jp:"Tundra", type:"土地 — 平地・島", cost:"—",
+    text:"{T}: {W}または{U}を加える。"
+  },
+  "Volcanic Island":{
+    jp:"Volcanic Island", type:"土地 — 島・山", cost:"—",
+    text:"{T}: {U}または{R}を加える。"
+  },
+  "Lotus Petal":{
+    jp:"水蓮の花びら", type:"アーティファクト", cost:"0",
+    text:"水蓮の花びらを生け贄に捧げる: 好きな色1色のマナ1点を加える。"
+  },
+  "Mana Vault":{
+    jp:"魔力の櫃", type:"アーティファクト", cost:"1",
+    text:"魔力の櫃は通常のアンタップ・ステップではアンタップしない。アップキープに{4}を支払ってアンタップできる。{T}: {C}{C}{C}を加える。ドロー・ステップ開始時にタップ状態なら1点のダメージを受ける。"
+  },
+  "Mox Diamond":{
+    jp:"モックス・ダイアモンド", type:"アーティファクト", cost:"0",
+    text:"戦場に出る際、土地カード1枚を捨てないかぎり墓地に置く。{T}: 好きな色1色のマナ1点を加える。"
+  },
+  "Scroll Rack":{
+    jp:"巻物棚", type:"アーティファクト", cost:"2",
+    text:"{1}, {T}: 手札から望む枚数のカードを伏せて脇に置く。その枚数だけライブラリーの一番上からカードを手札に加え、その後、脇に置いたカードを好きな順番でライブラリーの一番上に置く。"
+  },
+  "Voltaic Key":{
+    jp:"通電式キー", type:"アーティファクト", cost:"1",
+    text:"{1}, {T}: アーティファクト1つを対象とし、それをアンタップする。"
+  },
+  "Mind Over Matter":{
+    jp:"精神力", type:"エンチャント", cost:"2UUUU",
+    text:"カード1枚を捨てる: アーティファクト、クリーチャー、土地のうち1つを対象とし、それをタップまたはアンタップする。"
+  },
+  "Abeyance":{
+    jp:"中断", type:"インスタント", cost:"1W",
+    text:"プレイヤー1人を対象とする。このターン、そのプレイヤーはインスタントやソーサリーを唱えられず、起動型能力（マナ能力を除く）を起動できない。カードを1枚引く。"
+  },
+  "Intuition":{
+    jp:"直観", type:"インスタント", cost:"2U",
+    text:"ライブラリーからカードを3枚探して公開する。対戦相手1人がそのうち1枚を選び、それをあなたの手札に加え、残りを墓地に置く。その後ライブラリーを切り直す。"
+  },
+  "Power Sink":{
+    jp:"魔力消沈", type:"インスタント", cost:"XU",
+    text:"呪文1つを対象とする。そのコントローラーが{X}を支払わないかぎり、それを打ち消す。支払わなかった場合、そのプレイヤーの土地をすべてタップし、マナ・プールを空にする。"
+  },
+  "Stroke of Genius":{
+    jp:"天才のひらめき", type:"インスタント", cost:"X2U",
+    text:"プレイヤー1人を対象とする。そのプレイヤーはカードをX枚引く。"
+  },
+  "Time Spiral":{
+    jp:"時のらせん", type:"ソーサリー", cost:"4UU",
+    text:"各プレイヤーは自分の手札と墓地をライブラリーに加えて切り直し、カードを7枚引く。時のらせんを追放する。土地を最大6つまでアンタップする。"
+  },
+  "Windfall":{
+    jp:"意外な授かり物", type:"ソーサリー", cost:"2U",
+    text:"各プレイヤーは手札を捨て、その後、この方法で最も多くのカードを捨てたプレイヤーの枚数に等しい枚数のカードを引く。"
+  }
+};
+
+function manaMarkup(text){
+  return text
+    .replaceAll("{W}","◯W").replaceAll("{U}","◯U").replaceAll("{B}","◯B")
+    .replaceAll("{R}","◯R").replaceAll("{G}","◯G").replaceAll("{C}","◇")
+    .replaceAll("{T}","↷").replaceAll("{1}","①").replaceAll("{X}","X");
+}
+
+function renderCardDetail(){
+  const el=document.getElementById("cardDetail");
+  if(!el) return;
+
+  if(selected.zone===null || selected.index===null){
+    el.innerHTML='<div style="color:#64748b">カードを選択すると、ここに能力が表示されます。</div>';
+    return;
+  }
+
+  let name=null;
+  let zoneLabel="";
+  let tapped=false;
+
+  if(selected.zone==="hand"){
+    name=state.hand[selected.index];
+    zoneLabel="手札";
+  } else if(selected.zone==="battlefield"){
+    const p=state.battlefield[selected.index];
+    if(p){ name=p.name; tapped=!!p.tapped; zoneLabel="戦場"; }
+  } else if(selected.zone==="graveyard"){
+    const gy=state.graveyard.slice(-12).reverse();
+    name=gy[selected.index];
+    zoneLabel="墓地";
+  } else if(selected.zone==="exile"){
+    const ex=state.exile.slice(-12).reverse();
+    name=ex[selected.index];
+    zoneLabel="追放";
+  }
+
+  if(!name){
+    el.innerHTML='<div style="color:#64748b">カード情報を取得できません。</div>';
+    return;
+  }
+
+  const info=cardInfo[name] || {jp:name,type:"カード",cost:"—",text:"能力テキスト未登録。"};
+  el.innerHTML=`
+    <img class="card-detail-image" src="${cardImageUrl(name)}" alt="${info.jp}">
+    <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
+      <div>
+        <div style="font-size:20px;font-weight:800">${info.jp}</div>
+        <div style="color:#94a3b8;font-size:12px;margin-top:2px">${name}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-weight:700">${info.cost}</div>
+        <div style="font-size:12px;color:#94a3b8">${zoneLabel}${tapped?" / タップ状態":""}</div>
+      </div>
+    </div>
+    <div style="margin-top:10px;color:#cbd5e1;font-size:13px">${info.type}</div>
+    <div style="margin-top:10px;line-height:1.65;font-size:14px">${manaMarkup(info.text)}</div>
+  `;
+}
+
+function initialState(){
+  return {
+    turn:1,life:20,storm:0,library:[],hand:[],battlefield:[],graveyard:[],exile:[],
+    mana:{W:0,U:0,B:0,R:0,G:0,C:0},landsPlayed:0,handPage:1,
+    oppLibrary:53,oppHand:7,oppGraveyard:0,oppMana:0,abeyanceActive:false,spellsCast:0,cardsDrawn:0,cardsDiscarded:0,
+    maxStorm:0,maxMana:0,maxHand:7,winTurn:0,log:[]
+  };
+}
+
+function makeDeck(){
+  const d=[];
+  for(const [q,n] of decklist) for(let i=0;i<q;i++) d.push(n);
+  return shuffle(d);
+}
+function shuffle(a){
+  a=[...a];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}
+  return a;
+}
+function snapshot(){ undoState=JSON.parse(JSON.stringify(state)); }
+function undo(){
+  if(!undoState) return alert("戻せる直前操作がありません。");
+  state=undoState; undoState=null; log("1手戻す"); render();
+}
+function log(msg){
+  state.log.push(`[T${state.turn}] ${msg}`);
+  if(state.log.length>200) state.log.shift();
+  updateStats();
+}
+function updateStats(){
+  state.maxStorm=Math.max(state.maxStorm,state.storm);
+  const mana=colors.reduce((s,c)=>s+state.mana[c],0);
+  state.maxMana=Math.max(state.maxMana,mana);
+  state.maxHand=Math.max(state.maxHand,state.hand.length);
+}
+function newGame(){
+  state=initialState(); undoState=null; selected={zone:null,index:null}; closeCardDetail();
+  state.library=makeDeck();
+  for(let i=0;i<7;i++) draw(1,false);
+  log("新しいゲーム開始");
+  render();
+}
+function draw(n=1,doSnap=true){
+  if(doSnap) snapshot();
+  let c=0;
+  for(let i=0;i<n;i++){
+    if(!state.library.length){log("ライブラリーが空です");break;}
+    state.hand.push(state.library.shift()); c++;
+  }
+  state.cardsDrawn+=c;
+  if(doSnap) log(`${c}枚ドロー`);
+  normalizePage(); render();
+}
+function normalizePage(){
+  const max=Math.max(1,Math.ceil(state.hand.length/12));
+  state.handPage=Math.min(Math.max(1,state.handPage),max);
+}
+function prevHand(){ if(state.handPage>1){state.handPage--; selected={zone:null,index:null}; closeCardDetail(); render();} }
+function nextHand(){ const max=Math.max(1,Math.ceil(state.hand.length/12)); if(state.handPage<max){state.handPage++; selected={zone:null,index:null}; closeCardDetail(); render();} }
+
+function isMobileUI(){
+  return window.matchMedia && window.matchMedia("(max-width:700px)").matches;
+}
+function openCardDetail(){
+  const sec=document.getElementById("cardDetailSection");
+  if(sec && isMobileUI()) sec.classList.add("mobile-open");
+}
+function closeCardDetail(){
+  const sec=document.getElementById("cardDetailSection");
+  if(sec) sec.classList.remove("mobile-open");
+}
+function selectCard(zone,index){
+  selected={zone,index};
+  render();
+  requestAnimationFrame(()=>openCardDetail());
+}
+
+
+function spellCostFor(name){
+  const costs={
+    "Lotus Petal":[0,{}],"Mana Vault":[1,{}],"Mox Diamond":[0,{}],
+    "Scroll Rack":[2,{}],"Voltaic Key":[1,{}],
+    "Mind Over Matter":[2,{U:4}],"Abeyance":[1,{W:1}],"Intuition":[2,{U:1}],
+    "Power Sink":null,"Stroke of Genius":null,"Time Spiral":[4,{U:2}],"Windfall":[2,{U:1}]
+  };
+  return costs[name];
+}
+
+function setPermanentTapped(index,tapped,reason=""){
+  const p=state.battlefield[index];
+  if(!p) return;
+  const was=!!p.tapped;
+  p.tapped=!!tapped;
+  if(!was && p.tapped && p.name==="City of Brass"){
+    state.life-=1;
+    log(`真鍮の都がタップ状態になったため1点のダメージ${reason?` (${reason})`:""}`);
+  }
+}
+
+function chooseHandIndex(filterFn,message,def="1"){
+  const rows=[];
+  state.hand.forEach((n,i)=>{if(!filterFn||filterFn(n,i))rows.push(`${i+1}: ${cardDisplayName(n)} / ${n}`);});
+  if(!rows.length) return -1;
+  const raw=prompt(`${message}\n${rows.join("\n")}`,def);
+  if(raw===null) return -1;
+  const i=parseInt(raw,10)-1;
+  return (i>=0&&i<state.hand.length&&(!filterFn||filterFn(state.hand[i],i)))?i:-1;
+}
+
+function chooseMultipleHandIndices(message){
+  if(!state.hand.length) return [];
+  const rows=state.hand.map((n,i)=>`${i+1}: ${cardDisplayName(n)} / ${n}`).join("\n");
+  const raw=prompt(`${message}\n${rows}\n\n例: 1,3,5`,"");
+  if(raw===null||!raw.trim()) return [];
+  return [...new Set(raw.split(",").map(x=>parseInt(x.trim(),10)-1).filter(i=>i>=0&&i<state.hand.length))]
+    .sort((a,b)=>a-b);
+}
+
+function chooseLibraryCardIndex(message,exclude=[]){
+  const excluded=new Set(exclude);
+  const rows=state.library.map((n,i)=>excluded.has(i)?null:`${i+1}: ${cardDisplayName(n)} / ${n}`)
+    .filter(Boolean).join("\n");
+  const raw=prompt(`${message}\n${rows}`,"1");
+  if(raw===null) return -1;
+  const i=parseInt(raw,10)-1;
+  return (i>=0&&i<state.library.length&&!excluded.has(i))?i:-1;
+}
+
+function untapUpToSixLands(){
+  const candidates=state.battlefield.map((p,i)=>lands.has(p.name)&&p.tapped?i:-1).filter(i=>i>=0);
+  if(!candidates.length) return;
+  const rows=candidates.map(i=>`${i+1}: ${cardDisplayName(state.battlefield[i].name)}`).join("\n");
+  const raw=prompt(`《時のらせん》: アンタップする土地を最大6つ選択してください。\n${rows}\n\n例: 1,2,4\n空欄なら最大6つ自動選択`,"");
+  let picks;
+  if(raw===null||!raw.trim()) picks=candidates.slice(0,6);
+  else picks=[...new Set(raw.split(",").map(x=>parseInt(x.trim(),10)-1))].filter(i=>candidates.includes(i)).slice(0,6);
+  picks.forEach(i=>setPermanentTapped(i,false,"時のらせん"));
+  if(picks.length) log(`《時のらせん》: 土地${picks.length}枚をアンタップ`);
+}
+
+function playSelected(){
+  if(selected.zone!=="hand") return alert("手札からカードを選択してください。");
+  const idx=selected.index;
+  const name=state.hand[idx];
+  if(lands.has(name)) return play土地(idx);
+
+  const nonPermanent=new Set(["Abeyance","Intuition","Power Sink","Stroke of Genius","Time Spiral","Windfall"]);
+  if(nonPermanent.has(name)||name==="Mind Over Matter") return castSelected();
+  if(!artifacts.has(name)) return castSelected();
+
+  snapshot();
+  const cost=spellCostFor(name);
+  if(cost&&!payCost(cost[0],cost[1])){
+    undo();
+    return alert(`《${cardDisplayName(name)}》のマナ・コストを支払えません。`);
+  }
+
+  if(name==="Mox Diamond"){
+    state.hand.splice(idx,1);
+    state.storm++; state.spellsCast++;
+    const landChoices=state.hand.map((n,i)=>lands.has(n)?i:-1).filter(i=>i>=0);
+    if(!landChoices.length){
+      state.graveyard.push(name);
+      log("《モックス・ダイアモンド》: 捨てられる土地がないため墓地へ");
+    }else{
+      const rows=landChoices.map(i=>`${i+1}: ${cardDisplayName(state.hand[i])}`).join("\n");
+      const raw=prompt(`《モックス・ダイアモンド》で捨てる土地を選択してください。\n${rows}\nキャンセルすると土地を捨てず、モックスは墓地に置かれます。`,String(landChoices[0]+1));
+      const li=raw===null?-1:parseInt(raw,10)-1;
+      if(landChoices.includes(li)){
+        const [land]=state.hand.splice(li,1);
+        state.graveyard.push(land); state.cardsDiscarded++;
+        state.battlefield.push({name,tapped:false});
+        log(`《モックス・ダイアモンド》: ${cardDisplayName(land)}を捨てて戦場へ`);
+      }else{
+        state.graveyard.push(name);
+        log("《モックス・ダイアモンド》: 土地を捨てなかったため墓地へ");
+      }
+    }
+  }else{
+    state.hand.splice(idx,1);
+    state.battlefield.push({name,tapped:false});
+    state.storm++; state.spellsCast++;
+    log(`唱える: ${cardDisplayName(name)}`);
+  }
+
+  selected={zone:null,index:null};
+  closeCardDetail(); normalizePage(); render();
+}
+function play土地(idx){
+  if(state.landsPlayed>=1) return alert("このターンはすでに土地を1枚プレイしています。");
+  snapshot();
+  const name=state.hand.splice(idx,1)[0];
+  state.battlefield.push({name,tapped:false});
+  state.landsPlayed++;
+  log(`土地をプレイ: ${name}`);
+  selected={zone:null,index:null};closeCardDetail();normalizePage();render();
+}
+function discardSelected(){
+  if(selected.zone!=="hand") return alert("手札からカードを選択してください。");
+  snapshot();
+  const [name]=state.hand.splice(selected.index,1);
+  state.graveyard.push(name); state.cardsDiscarded++;
+  log(`捨てる: ${name}`);
+  selected={zone:null,index:null};closeCardDetail();normalizePage();render();
+}
+function toggleTapSelected(){
+  if(selected.zone!=="battlefield") return alert("戦場からカードを選択してください。");
+  snapshot();
+  const p=state.battlefield[selected.index];
+  setPermanentTapped(selected.index,!p.tapped,"手動操作");
+  log(`${state.battlefield[selected.index].tapped?"タップ":"アンタップ"} ${cardDisplayName(p.name)}`);
+  render();
+}
+function toGraveSelected(){
+  if(selected.zone!=="battlefield") return alert("戦場からカードを選択してください。");
+  snapshot();
+  const [p]=state.battlefield.splice(selected.index,1); state.graveyard.push(p.name);
+  log(`${p.name} → 墓地`); selected={zone:null,index:null};closeCardDetail();render();
+}
+
+function addMana(c,n){
+  snapshot();
+  state.mana[c]+=n;
+  log(`マナ +${n}${c}`);
+  render();
+}
+function spendMana(c){
+  if(state.mana[c]<=0) return alert(`${c}マナがありません。`);
+  snapshot();
+  state.mana[c]-=1;
+  log(`マナ -1${c}`);
+  render();
+}
+function resetMana(){ snapshot(); colors.forEach(c=>state.mana[c]=0); log("マナ・プールをリセット"); render(); }
+function payGeneric(n){
+  const order=["C","U","W","B","R","G"];
+  let total=order.reduce((s,c)=>s+state.mana[c],0);
+  if(total<n) return false;
+  for(const c of order){let x=Math.min(n,state.mana[c]);state.mana[c]-=x;n-=x;if(!n)break;}
+  return true;
+}
+function payCost(generic, req={}){
+  const copy=JSON.parse(JSON.stringify(state.mana));
+  for(const [c,n] of Object.entries(req)){ if(state.mana[c]<n){state.mana=copy;return false;} state.mana[c]-=n; }
+  if(!payGeneric(generic)){state.mana=copy;return false;}
+  return true;
+}
+function chooseColor(valid=["W","U","B","R","G"],def="U"){
+  const x=(prompt(`加えるマナの色を入力してください: ${valid.join("/")}`,def)||"").toUpperCase();
+  return valid.includes(x)?x:null;
+}
+
+function activateSelected(){
+  if(selected.zone!=="battlefield") return alert("戦場からカードを選択してください。");
+  const p=state.battlefield[selected.index];
+  const n=p.name;
+  snapshot();
+
+  if(n==="Mana Vault"&&p.tapped){
+    if(!confirm("《魔力の櫃》はタップ状態です。\n4マナを支払ってアンタップしますか？")){
+      undoState=null; return;
+    }
+    if(!payGeneric(4)){undo();return alert("アンタップするための4マナを支払えません。");}
+    setPermanentTapped(selected.index,false,"魔力の櫃");
+    log("《魔力の櫃》: 4マナを支払いアンタップ");
+    return render();
+  }
+
+  if(p.tapped&&!["Lotus Petal","Mind Over Matter"].includes(n)){
+    undoState=null; return alert(`${cardDisplayName(n)} はタップされています。`);
+  }
+
+  if(n==="Tolarian Academy"){
+    const count=state.battlefield.filter(x=>artifacts.has(x.name)).length;
+    setPermanentTapped(selected.index,true,"マナ能力");
+    state.mana.U+=count; log(`《トレイリアのアカデミー》: +${count}U`);
+  }else if(n==="Mana Vault"){
+    setPermanentTapped(selected.index,true,"マナ能力");
+    state.mana.C+=3; log("《魔力の櫃》: +CCC");
+  }else if(n==="Lotus Petal"){
+    const c=chooseColor(); if(!c){undo();return;}
+    state.battlefield.splice(selected.index,1);
+    state.graveyard.push(n); state.mana[c]+=1;
+    log(`《水蓮の花びら》を生け贄: +${c}`);
+    selected={zone:null,index:null};
+  }else if(n==="Mox Diamond"){
+    const c=chooseColor(); if(!c){undo();return;}
+    setPermanentTapped(selected.index,true,"マナ能力");
+    state.mana[c]+=1; log(`《モックス・ダイアモンド》: +${c}`);
+  }else if(n==="Scroll Rack"){
+    if(!payGeneric(1)){undo();return alert("《巻物棚》の起動に1マナ必要です。");}
+    if(!state.hand.length){undo();return alert("手札がありません。");}
+    const picks=chooseMultipleHandIndices("《巻物棚》で一時的に脇へ置く手札を選択してください。");
+    if(!picks.length){undo();return;}
+    setPermanentTapped(selected.index,true,"巻物棚");
+    const setAside=picks.map(i=>state.hand[i]);
+    [...picks].sort((a,b)=>b-a).forEach(i=>state.hand.splice(i,1));
+    const take=Math.min(setAside.length,state.library.length);
+    const drawn=state.library.splice(0,take);
+    state.hand.push(...drawn); state.cardsDrawn+=drawn.length;
+    let ordered=[...setAside];
+    if(setAside.length>1){
+      const rows=setAside.map((x,i)=>`${i+1}: ${cardDisplayName(x)}`).join("\n");
+      const raw=prompt(`ライブラリーの一番上に戻す順番を入力してください。\n左端が一番上です。\n${rows}\n例: 2,1,3`,setAside.map((_,i)=>i+1).join(","));
+      if(raw){
+        const order=raw.split(",").map(x=>parseInt(x.trim(),10)-1);
+        if(order.length===setAside.length&&new Set(order).size===setAside.length&&order.every(i=>i>=0&&i<setAside.length)){
+          ordered=order.map(i=>setAside[i]);
+        }
+      }
+    }
+    state.library.unshift(...ordered);
+    log(`《巻物棚》: ${setAside.length}枚を入れ替え（${drawn.length}枚を取得）`);
+  }else if(n==="Voltaic Key"){
+    if(!payGeneric(1)){undo();return alert("《通電式キー》の起動に1マナ必要です。");}
+    const choices=state.battlefield.map((x,i)=>artifacts.has(x.name)?`${i+1}:${cardDisplayName(x.name)}${x.tapped?" [T]":""}`:null).filter(Boolean).join("\n");
+    const t=parseInt(prompt("アンタップするアーティファクトの番号を入力してください:\n"+choices,"1"),10)-1;
+    if(!(t>=0&&t<state.battlefield.length&&artifacts.has(state.battlefield[t].name))){undo();return alert("アーティファクトを選択してください。");}
+    setPermanentTapped(selected.index,true,"通電式キー");
+    setPermanentTapped(t,false,"通電式キー");
+    log(`《通電式キー》 → ${cardDisplayName(state.battlefield[t].name)}をアンタップ`);
+  }else if(n==="Ancient Tomb"){
+    setPermanentTapped(selected.index,true,"マナ能力");
+    state.mana.C+=2; state.life-=2; log("《古えの墳墓》: +CC、ライフ -2");
+  }else if(n==="City of Brass"){
+    const c=chooseColor(); if(!c){undo();return;}
+    setPermanentTapped(selected.index,true,"マナ能力");
+    state.mana[c]+=1; log(`《真鍮の都》: +${c}`);
+  }else if(n==="Tundra"){
+    const c=chooseColor(["W","U"]); if(!c){undo();return;}
+    setPermanentTapped(selected.index,true,"マナ能力");
+    state.mana[c]+=1; log(`Tundra: +${c}`);
+  }else if(n==="Volcanic Island"){
+    const c=chooseColor(["U","R"]); if(!c){undo();return;}
+    setPermanentTapped(selected.index,true,"マナ能力");
+    state.mana[c]+=1; log(`Volcanic Island: +${c}`);
+  }else if(n==="Mind Over Matter"){
+    if(!state.hand.length){undo();return alert("捨てる手札がありません。");}
+    const hi=chooseHandIndex(null,"《精神力》のコストとして捨てる手札を選択してください。");
+    if(hi<0){undo();return;}
+    const valid=state.battlefield.map((x,i)=>(artifacts.has(x.name)||lands.has(x.name))?i:-1).filter(i=>i>=0);
+    const rows=valid.map(i=>`${i+1}: ${cardDisplayName(state.battlefield[i].name)}${state.battlefield[i].tapped?" [T]":""}`).join("\n");
+    const ti=parseInt(prompt("対象にするアーティファクトか土地の番号を入力してください:\n"+rows,String((valid[0]??0)+1)),10)-1;
+    if(!valid.includes(ti)){undo();return;}
+    const mode=(prompt("TAP または UNTAP を入力してください","UNTAP")||"").toUpperCase();
+    if(!["TAP","UNTAP"].includes(mode)){undo();return;}
+    const d=state.hand.splice(hi,1)[0];
+    state.graveyard.push(d); state.cardsDiscarded++;
+    setPermanentTapped(ti,mode==="TAP","精神力");
+    log(`《精神力》: ${cardDisplayName(d)}を捨てる → ${cardDisplayName(state.battlefield[ti].name)}を${mode==="TAP"?"タップ":"アンタップ"}`);
+  }else{
+    undoState=null; return alert("このパーマネントに起動できる専用能力はありません。");
+  }
+  render();
+}
+
+function castSelected(){
+  if(selected.zone!=="hand") return alert("手札の呪文を選択してください。");
+  const idx=selected.index,n=state.hand[idx];
+  snapshot();
+
+  if(n==="Mind Over Matter"){
+    if(!payCost(2,{U:4})){undo();return alert("《精神力》のコスト 2UUUU を支払えません。");}
+    state.hand.splice(idx,1); state.battlefield.push({name:n,tapped:false});
+    state.storm++; state.spellsCast++; log("《精神力》を唱えて戦場へ");
+  }else if(n==="Abeyance"){
+    if(!payCost(1,{W:1})){undo();return alert("《中断》のコスト 1W を支払えません。");}
+    state.hand.splice(idx,1); state.graveyard.push(n);
+    state.storm++; state.spellsCast++; state.abeyanceActive=true;
+    draw(1,false); log("《中断》を相手に解決: 妨害を封じ、1枚ドロー");
+  }else if(n==="Intuition"){
+    if(!payCost(2,{U:1})){undo();return alert("《直観》のコスト 2U を支払えません。");}
+    if(state.library.length<3){undo();return alert("ライブラリーに3枚以上必要です。");}
+    state.hand.splice(idx,1); state.graveyard.push(n);
+    state.storm++; state.spellsCast++;
+    const chosen=[];
+    for(let k=0;k<3;k++){
+      const li=chooseLibraryCardIndex(`《直観》: 公開するカード ${k+1}/3 を選択してください。`,chosen);
+      if(li<0){undo();return;}
+      chosen.push(li);
+    }
+    const names=chosen.map(i=>state.library[i]);
+    [...chosen].sort((a,b)=>b-a).forEach(i=>state.library.splice(i,1));
+    const rows=names.map((x,i)=>`${i+1}: ${cardDisplayName(x)} / ${x}`).join("\n");
+    let pick=parseInt(prompt(`相手が手札に加える1枚を選びます。\n${rows}\n（一人回しなので手動選択）`,"1"),10)-1;
+    if(!(pick>=0&&pick<3)) pick=0;
+    state.hand.push(names[pick]);
+    names.forEach((x,i)=>{if(i!==pick)state.graveyard.push(x);});
+    state.library=shuffle(state.library);
+    log(`《直観》: ${cardDisplayName(names[pick])}を手札、残り2枚を墓地へ`);
+  }else if(n==="Power Sink"){
+    const x=parseInt(prompt("《魔力消沈》のXを入力してください。","1"),10);
+    if(isNaN(x)||x<0){undo();return;}
+    if(!payCost(x,{U:1})){undo();return alert("《魔力消沈》のコスト XU を支払えません。");}
+    state.hand.splice(idx,1); state.graveyard.push(n);
+    state.storm++; state.spellsCast++;
+    const result=(prompt("相手はXを支払いますか？ PAY / NOPAY","NOPAY")||"NOPAY").toUpperCase();
+    if(result==="PAY") log(`《魔力消沈》X=${x}: 相手が支払い、対象呪文は解決`);
+    else{
+      state.oppMana=0;
+      log(`《魔力消沈》X=${x}: 対象呪文を打ち消し、相手の土地タップ／マナ消去を処理した扱い`);
+    }
+  }else if(n==="Time Spiral"){
+    if(!payCost(4,{U:2})){undo();return alert("《時のらせん》のコスト 4UU を支払えません。");}
+    state.hand.splice(idx,1); state.storm++; state.spellsCast++;
+    const pool=[...state.library,...state.hand,...state.graveyard];
+    state.library=shuffle(pool); state.hand=[]; state.graveyard=[]; state.exile.push("Time Spiral");
+    state.oppLibrary=Math.max(0,state.oppLibrary+state.oppHand+(state.oppGraveyard||0));
+    state.oppHand=0; state.oppGraveyard=0;
+    const od=Math.min(7,state.oppLibrary); state.oppLibrary-=od; state.oppHand=od;
+    draw(7,false); untapUpToSixLands();
+    log("《時のらせん》を解決: 7枚引き直し、最大6土地アンタップ");
+  }else if(n==="Windfall"){
+    if(!payCost(2,{U:1})){undo();return alert("《意外な授かり物》のコスト 2U を支払えません。");}
+    state.hand.splice(idx,1); state.storm++; state.spellsCast++;
+    const selfDiscard=state.hand.length,oppDiscard=state.oppHand;
+    const drawCount=Math.max(selfDiscard,oppDiscard);
+    state.graveyard.push(...state.hand,"Windfall"); state.cardsDiscarded+=selfDiscard; state.hand=[];
+    state.oppGraveyard=(state.oppGraveyard||0)+oppDiscard; state.oppHand=0;
+    draw(drawCount,false);
+    const od=Math.min(drawCount,state.oppLibrary); state.oppLibrary-=od; state.oppHand+=od;
+    if(od<drawCount){state.winTurn=state.turn;alert("相手が必要枚数を引けず、一人回し勝利！");}
+    log(`《意外な授かり物》: 最大${drawCount}枚を参照して各プレイヤーがドロー`);
+  }else if(n==="Stroke of Genius"){
+    const x=parseInt(prompt("Xの値を入力してください","7"),10);
+    if(isNaN(x)||x<0){undo();return;}
+    if(!payCost(x+2,{U:1})){undo();return alert("《天才のひらめき》のコスト X2U を支払えません。");}
+    const target=(prompt("対象: SELF=自分 / OPP=相手","SELF")||"").toUpperCase();
+    if(!["SELF","OPP"].includes(target)){undo();return;}
+    state.hand.splice(idx,1); state.graveyard.push(n); state.storm++; state.spellsCast++;
+    if(target==="SELF"){
+      draw(x,false); log(`《天才のひらめき》: 自分が${x}枚ドロー`);
+    }else{
+      const od=Math.min(x,state.oppLibrary); state.oppLibrary-=od; state.oppHand+=od;
+      log(`《天才のひらめき》: 相手に${x}枚ドローを要求`);
+      if(od<x){state.winTurn=state.turn;alert("一人回し勝利！ 相手は必要枚数を引けません。");}
+    }
+  }else if(artifacts.has(n)){
+    undoState=null; return playSelected();
+  }else{
+    undoState=null; return alert("このカードの専用処理はありません。");
+  }
+
+  selected={zone:null,index:null}; closeCardDetail(); normalizePage(); render();
+}
+
+function untapStep(){
+  snapshot();
+  state.battlefield.forEach(p=>{ if(p.name!=="Mana Vault") p.tapped=false; });
+  log("アンタップ・ステップ"); render();
+}
+function endTurn(){
+  snapshot();
+  state.turn++; state.storm=0; state.landsPlayed=0; state.abeyanceActive=false;
+  colors.forEach(c=>state.mana[c]=0);
+  state.battlefield.forEach((p,i)=>{if(p.name!=="Mana Vault")setPermanentTapped(i,false,"アンタップ・ステップ");});
+  const tappedVaults=state.battlefield.filter(p=>p.name==="Mana Vault"&&p.tapped).length;
+  if(tappedVaults){
+    state.life-=tappedVaults;
+    log(`《魔力の櫃》: ドロー・ステップに${tappedVaults}点のダメージ`);
+  }
+  draw(1,false); log(`ターン${state.turn}開始`); render();
+}
+
+function saveState(){
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="moma_セーブデータ.json";a.click();
+  URL.revokeObjectURL(a.href);
+}
+function loadState(ev){
+  const f=ev.target.files[0]; if(!f)return;
+  const r=new FileReader();r.onload=()=>{try{state=JSON.parse(r.result);undoState=null;selected={zone:null,index:null};closeCardDetail();normalizePage();render();}catch(e){alert("セーブデータの読み込みに失敗しました。");}};r.readAsText(f);
+}
+
+
+const localCardImages = {"Ancient Tomb": "assets/cards/ancient-tomb.jpg", "City of Brass": "assets/cards/city-of-brass.jpg", "Tolarian Academy": "assets/cards/tolarian-academy.jpg", "Tundra": "assets/cards/tundra.jpg", "Volcanic Island": "assets/cards/volcanic-island.jpg", "Lotus Petal": "assets/cards/lotus-petal.jpg", "Mana Vault": "assets/cards/mana-vault.jpg", "Mox Diamond": "assets/cards/mox-diamond.jpg", "Scroll Rack": "assets/cards/scroll-rack.jpg", "Voltaic Key": "assets/cards/voltaic-key.jpg", "Mind Over Matter": "assets/cards/mind-over-matter.jpg", "Abeyance": "assets/cards/abeyance.jpg", "Intuition": "assets/cards/intuition.jpg", "Power Sink": "assets/cards/power-sink.jpg", "Stroke of Genius": "assets/cards/stroke-of-genius.jpg", "Time Spiral": "assets/cards/time-spiral.jpg", "Windfall": "assets/cards/windfall.jpg"};
+function cardImageUrl(name){ return localCardImages[name] || "assets/cards/card-back.jpg"; }
+function cardDisplayName(name){
+  return (cardInfo[name] && cardInfo[name].jp) ? cardInfo[name].jp : name;
+}
+function imageCardHtml(name, zone, index, extraClass=""){
+  const selectedClass=(selected.zone===zone && selected.index===index) ? "selected" : "";
+  const safeName=name.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  return `<div class="card image-card ${selectedClass} ${extraClass}"
+    data-zone="${zone}" data-index="${index}"
+    onclick="handleCardTap(event,'${zone}',${index})"
+    ondblclick="handleCardDouble(event,'${zone}',${index})">
+      <img src="${cardImageUrl(name)}" alt="${safeName}" loading="lazy"
+        onerror="this.parentElement.classList.add('image-failed')">
+      <div class="fallback">${cardDisplayName(name)}</div>
+    </div>`;
+}
+
+const lastTapByCard = new Map();
+function cardTapKey(zone,index){ return `${zone}:${index}`; }
+
+function handleCardTap(ev,zone,index){
+  if(ev && ev.detail && ev.detail > 1) return;
+  const key=cardTapKey(zone,index);
+  const now=Date.now();
+  const prev=lastTapByCard.get(key)||0;
+  lastTapByCard.set(key,now);
+
+  if(isMobileUI() && now-prev < 360){
+    lastTapByCard.set(key,0);
+    playCardFromGesture(zone,index);
+    return;
+  }
+  selectCard(zone,index);
+}
+
+function handleCardDouble(ev,zone,index){
+  if(ev){ ev.preventDefault(); ev.stopPropagation(); }
+  playCardFromGesture(zone,index);
+}
+
+function playCardFromGesture(zone,index){
+  selectCard(zone,index);
+  setTimeout(()=>{
+    if(zone==="hand"){
+      const n=state.hand[index];
+      if(!n) return;
+      if(lands.has(n) || artifacts.has(n) || n==="Mind Over Matter"){
+        playSelected();
+      }else{
+        castSelected();
+      }
+    }else if(zone==="battlefield"){
+      activateSelected();
+    }
+  },0);
+}
+
+function render(){
+  updateStats();
+  const manaTotal=colors.reduce((s,c)=>s+state.mana[c],0);
+  const stats=[
+    ["ターン",state.turn],["ライフ",state.life],["ストーム",state.storm],["ライブラリー",state.library.length],
+    ["手札",state.hand.length],["アーティファクト",state.battlefield.filter(x=>artifacts.has(x.name)).length],
+    ["マナ",manaTotal],["相手ライブラリー",state.oppLibrary]
+  ];
+  document.getElementById("status").innerHTML=stats.map(([k,v])=>`<div class="stat">${k}<b>${v}</b></div>`).join("");
+
+  document.getElementById("battlefield").innerHTML=state.battlefield.map((p,i)=>
+    imageCardHtml(p.name,"battlefield",i,p.tapped?"tapped":"")
+  ).join("") || '<div style="color:#64748b">— 空 —</div>';
+
+  const start=(state.handPage-1)*12, slice=state.hand.slice(start,start+12);
+  document.getElementById("hand").innerHTML=slice.map((n,j)=>{
+    const i=start+j;
+    return imageCardHtml(n,"hand",i);
+  }).join("") || '<div style="color:#64748b">— 空 —</div>';
+  document.getElementById("handPageInfo").textContent=`ページ ${state.handPage}/${Math.max(1,Math.ceil(state.hand.length/12))}`;
+
+  document.getElementById("mana").innerHTML=colors.map(c=>`<div class="manaBox">${c}<b>${state.mana[c]}</b></div>`).join("");
+
+  const gy=state.graveyard.slice(-12).reverse();
+  document.getElementById("graveyard").innerHTML=gy.map((n,i)=>imageCardHtml(n,"graveyard",i)).join("")||'<div style="color:#64748b">— 空 —</div>';
+  const ex=state.exile.slice(-12).reverse();
+  document.getElementById("exile").innerHTML=ex.map((n,i)=>imageCardHtml(n,"exile",i)).join("")||'<div style="color:#64748b">— 空 —</div>';
+
+  document.getElementById("stats").innerHTML=`
+    <table style="width:100%;border-collapse:collapse">
+      ${[
+        ["呪文s Cast",state.spellsCast],["ドロー枚数",state.cardsDrawn],["捨てた枚数",state.cardsDiscarded],
+        ["最大ストーム",state.maxStorm],["最大マナ",state.maxMana],["最大手札",state.maxHand],["勝利ターン",state.winTurn||"—"]
+      ].map(([k,v])=>`<tr><td style="padding:5px;border-bottom:1px solid #1e293b">${k}</td><td style="text-align:right">${v}</td></tr>`).join("")}
+    </table>`;
+
+  document.getElementById("log").innerHTML=state.log.slice().reverse().map(x=>`<div>${x}</div>`).join("");
+  renderCardDetail();
+}
+
+newGame();
+</script>
+
+<script>
+(function(){
+  const ua=navigator.userAgent||"";
+  const isIOS=/iPhone|iPad|iPod/.test(ua);
+  const isSafari=/Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
+  const isStandalone=window.navigator.standalone===true || window.matchMedia('(display-mode: standalone)').matches;
+  const hint=document.getElementById('pwaHint');
+  if(hint && isIOS && isSafari && !isStandalone) hint.style.display='block';
+
+  if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost')){
+    window.addEventListener('load', ()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+  }
+})();
+</script>
+
+</body>
+</html>
