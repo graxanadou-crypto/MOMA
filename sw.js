@@ -1,4 +1,4 @@
-const CACHE='moma-solitaire-v1.0.4';
+const CACHE='moma-solitaire-v1.1';
 const ASSETS=["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./ancient-tomb.jpg", "./city-of-brass.jpg", "./tolarian-academy.jpg", "./tundra.jpg", "./volcanic-island.jpg", "./lotus-petal.jpg", "./mana-vault.jpg", "./mox-diamond.jpg", "./scroll-rack.jpg", "./voltaic-key.jpg", "./mind-over-matter.jpg", "./abeyance.jpg", "./intuition.jpg", "./power-sink.jpg", "./stroke-of-genius.jpg", "./time-spiral.jpg", "./windfall.jpg", "./card-back.jpg"];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))));
 self.addEventListener('activate',e=>e.waitUntil(

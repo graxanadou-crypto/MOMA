@@ -11,7 +11,7 @@
   <link rel="apple-touch-icon" href="icon-192.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MoMA ソリティア 1998 — Safari/PWA版 v1.0.4 全カード効果実装</title>
+<title>MoMA ソリティア 1998 — Safari/PWA版 v1.1 全カード効果実装</title>
 <style>
 :root{
   --bg:#0b1220;--panel:#111827;--panel2:#172033;--line:#334155;--text:#e5e7eb;
@@ -348,6 +348,131 @@ body{
   .card-detail-image{max-width:220px}
 }
 
+
+/* v1.1 Mobile UX */
+#mobileHandMeta{display:none}
+.mobile-detail-actions{display:none}
+
+@media(max-width:700px){
+  body{
+    padding-bottom:245px!important;
+    overscroll-behavior-y:none;
+  }
+
+  /* Hand is always reachable at the bottom on mobile */
+  #handSection{
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:70px;
+    z-index:38;
+    margin:0!important;
+    padding:6px 8px 8px!important;
+    border-radius:14px 14px 0 0!important;
+    border-left:0!important;
+    border-right:0!important;
+    background:rgba(7,15,27,.985)!important;
+    box-shadow:0 -10px 30px rgba(0,0,0,.45)!important;
+    backdrop-filter:blur(10px);
+  }
+  #handSection h2{
+    min-height:24px;
+    margin:0 2px 3px!important;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    font-size:12px!important;
+  }
+  #handSection .handGestureHint,
+  #handSection .v09-top-hint,
+  #handSection #handPageInfo{
+    display:none!important;
+  }
+  #mobileHandMeta{
+    display:inline!important;
+    color:#a5c9df;
+    font-weight:600;
+    font-size:10px;
+    white-space:nowrap;
+  }
+  #handSection .controls{
+    display:none!important;
+  }
+  #hand{
+    height:116px;
+    min-height:116px;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    padding:2px 4px 4px!important;
+    gap:7px!important;
+    scroll-snap-type:x proximity;
+  }
+  #hand .card.image-card{
+    flex:0 0 78px!important;
+    width:78px!important;
+    min-width:78px!important;
+    max-width:78px!important;
+    height:109px!important;
+    min-height:109px!important;
+    scroll-snap-align:center;
+    border-radius:8px;
+  }
+
+  /* Battlefield cards stay compact and easy to hit */
+  #battlefield .card.image-card{
+    flex:0 0 92px!important;
+    min-width:92px!important;
+    max-width:92px!important;
+    min-height:128px!important;
+  }
+
+  /* Detail sheet appears only by long-press / explicit detail button */
+  #cardDetailSection{
+    bottom:238px!important;
+    max-height:48vh!important;
+    left:6px!important;
+    right:6px!important;
+  }
+  .card-detail-image{
+    max-width:170px!important;
+  }
+  #cardDetail{
+    font-size:13px!important;
+    line-height:1.5!important;
+    padding:10px!important;
+  }
+  #cardDetail > div:first-of-type{
+    gap:8px!important;
+  }
+  .mobile-detail-actions{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:7px;
+    margin-top:12px;
+  }
+  .mobile-detail-actions button{
+    min-height:43px;
+    padding:8px 6px;
+    font-size:12px;
+  }
+
+  .card.image-card.mobile-pressing{
+    outline:2px solid rgba(56,189,248,.65);
+    outline-offset:1px;
+    transform:scale(.97);
+  }
+
+  .mobile-action-bar{
+    z-index:60!important;
+  }
+}
+
+/* On desktop nothing from v1.1 changes the established layout */
+@media(min-width:701px){
+  #handSection{position:static}
+}
+
 </style>
 </head>
 <body>
@@ -357,7 +482,7 @@ body{
 </div>
 
 <header>
-  <h1>MoMA ソリティア 1998 — Safari/PWA版 v1.0.4 全カード効果実装</h1>
+  <h1>MoMA ソリティア 1998 — Safari/PWA版 v1.1 全カード効果実装</h1>
   <div class="sub">Tommi Hovi / Pro Tour Rome 1998 — Excel不要・完全オフライン対応</div>
 </header>
 <div class="wrap">
@@ -374,8 +499,8 @@ body{
     </div>
   </div>
 
-  <div class="section">
-    <h2>手札 <span style="color:#38bdf8;font-weight:400">1回タップ＝詳細 / ダブルタップ＝プレイ</span><div class="v09-top-hint">カード画像はすべてアプリ内蔵。外部画像アクセスなし。</div> <span id="handPageInfo" style="color:#94a3b8;font-weight:400"></span></h2>
+  <div class="section" id="handSection">
+    <h2>手札 <span class="handGestureHint" style="color:#38bdf8;font-weight:400">1回＝選択 / ダブル＝プレイ / 長押し＝詳細</span><span id="mobileHandMeta"></span><div class="v09-top-hint">カード画像はすべてアプリ内蔵。外部画像アクセスなし。</div> <span id="handPageInfo" style="color:#94a3b8;font-weight:400"></span></h2>
     <div class="zone" id="hand" class="zone card-zone hand-zone"></div>
     <div class="controls">
       <button onclick="prevHand()">◀ 前ページ</button>
@@ -462,8 +587,8 @@ body{
   </div>
 
   <div class="footer">
-    v1.0.4: デッキ内17種類すべての専用効果処理を実装。
-    Mox Diamond / Scroll Rack / Abeyance / Intuition / Power Sink / Mana Vault /
+    v1.1: デッキ内17種類すべての専用効果処理を実装。
+    スマホ: 手札常時下部表示 / 1タップ選択 / ダブルタップ即実行 / 長押し詳細。<br>Mox Diamond / Scroll Rack / Abeyance / Intuition / Power Sink / Mana Vault /
     Mind Over Matter / Time Spiral / Windfall / Stroke of Genius を含む。
     </div>
 </div>
@@ -610,7 +735,29 @@ function renderCardDetail(){
     </div>
     <div style="margin-top:10px;color:#cbd5e1;font-size:13px">${info.type}</div>
     <div style="margin-top:10px;line-height:1.65;font-size:14px">${manaMarkup(info.text)}</div>
+    <div class="mobile-detail-actions">
+      ${selected.zone==="hand" ? `
+        <button class="blue" onclick="mobilePrimaryAction()">プレイ / 唱える</button>
+        <button class="red" onclick="discardSelected()">捨てる</button>
+      ` : selected.zone==="battlefield" ? `
+        <button class="indigo" onclick="activateSelected()">能力を起動</button>
+        <button class="purple" onclick="toggleTapSelected()">タップ切替</button>
+        <button class="red" onclick="toGraveSelected()">墓地へ</button>
+        <button onclick="closeCardDetail()">閉じる</button>
+      ` : `
+        <button onclick="closeCardDetail()">閉じる</button>
+      `}
+    </div>
   `;
+}
+
+function mobilePrimaryAction(){
+  if(selected.zone!=="hand") return;
+  const n=state.hand[selected.index];
+  if(!n) return;
+  closeCardDetail();
+  if(lands.has(n) || artifacts.has(n) || n==="Mind Over Matter") playSelected();
+  else castSelected();
 }
 
 function initialState(){
@@ -684,10 +831,12 @@ function closeCardDetail(){
   const sec=document.getElementById("cardDetailSection");
   if(sec) sec.classList.remove("mobile-open");
 }
-function selectCard(zone,index){
+function selectCard(zone,index,showDetail=false){
   selected={zone,index};
   render();
-  requestAnimationFrame(()=>openCardDetail());
+  if(showDetail || !isMobileUI()){
+    requestAnimationFrame(()=>openCardDetail());
+  }
 }
 
 
@@ -1099,7 +1248,11 @@ function imageCardHtml(name, zone, index, extraClass=""){
   return `<div class="card image-card ${selectedClass} ${extraClass}"
     data-zone="${zone}" data-index="${index}"
     onclick="handleCardTap(event,'${zone}',${index})"
-    ondblclick="handleCardDouble(event,'${zone}',${index})">
+    ondblclick="handleCardDouble(event,'${zone}',${index})"
+    onpointerdown="handleCardPointerDown(event,'${zone}',${index})"
+    onpointerup="handleCardPointerEnd(event,'${zone}',${index})"
+    onpointercancel="handleCardPointerEnd(event,'${zone}',${index})"
+    onpointerleave="handleCardPointerEnd(event,'${zone}',${index})">
       <img src="${cardImageUrl(name)}" alt="${safeName}" loading="lazy"
         onerror="this.parentElement.classList.add('image-failed')">
       <div class="fallback">${cardDisplayName(name)}</div>
@@ -1107,43 +1260,72 @@ function imageCardHtml(name, zone, index, extraClass=""){
 }
 
 const lastTapByCard = new Map();
+const longPressTimers = new Map();
+let suppressNextTapKey = null;
+
 function cardTapKey(zone,index){ return `${zone}:${index}`; }
 
-function handleCardTap(ev,zone,index){
-  if(ev && ev.detail && ev.detail > 1) return;
+function handleCardPointerDown(ev,zone,index){
+  if(!isMobileUI()) return;
+  if(ev.pointerType==="mouse") return;
   const key=cardTapKey(zone,index);
+  clearTimeout(longPressTimers.get(key));
+  if(ev.currentTarget) ev.currentTarget.classList.add("mobile-pressing");
+  const timer=setTimeout(()=>{
+    suppressNextTapKey=key;
+    selectCard(zone,index,true);
+    if(navigator.vibrate) navigator.vibrate(20);
+  },520);
+  longPressTimers.set(key,timer);
+}
+
+function handleCardPointerEnd(ev,zone,index){
+  const key=cardTapKey(zone,index);
+  clearTimeout(longPressTimers.get(key));
+  longPressTimers.delete(key);
+  if(ev && ev.currentTarget) ev.currentTarget.classList.remove("mobile-pressing");
+}
+
+function handleCardTap(ev,zone,index){
+  if(ev && ev.detail && ev.detail>1) return;
+  const key=cardTapKey(zone,index);
+
+  if(suppressNextTapKey===key){
+    suppressNextTapKey=null;
+    return;
+  }
+
   const now=Date.now();
   const prev=lastTapByCard.get(key)||0;
   lastTapByCard.set(key,now);
 
-  if(isMobileUI() && now-prev < 360){
+  if(isMobileUI() && now-prev<330){
     lastTapByCard.set(key,0);
     playCardFromGesture(zone,index);
     return;
   }
-  selectCard(zone,index);
+
+  // Mobile single tap = selection only. Desktop single click keeps detail behavior.
+  selectCard(zone,index,!isMobileUI());
 }
 
 function handleCardDouble(ev,zone,index){
-  if(ev){ ev.preventDefault(); ev.stopPropagation(); }
+  if(ev){ev.preventDefault();ev.stopPropagation();}
   playCardFromGesture(zone,index);
 }
 
 function playCardFromGesture(zone,index){
-  selectCard(zone,index);
-  setTimeout(()=>{
-    if(zone==="hand"){
-      const n=state.hand[index];
-      if(!n) return;
-      if(lands.has(n) || artifacts.has(n) || n==="Mind Over Matter"){
-        playSelected();
-      }else{
-        castSelected();
-      }
-    }else if(zone==="battlefield"){
-      activateSelected();
-    }
-  },0);
+  selected={zone,index};
+  render();
+  closeCardDetail();
+  if(zone==="hand"){
+    const n=state.hand[index];
+    if(!n) return;
+    if(lands.has(n)||artifacts.has(n)||n==="Mind Over Matter") playSelected();
+    else castSelected();
+  }else if(zone==="battlefield"){
+    activateSelected();
+  }
 }
 
 function render(){
@@ -1168,6 +1350,10 @@ function render(){
   document.getElementById("handPageInfo").textContent=`ページ ${state.handPage}/${Math.max(1,Math.ceil(state.hand.length/12))}`;
 
   document.getElementById("mana").innerHTML=colors.map(c=>`<div class="manaBox">${c}<b>${state.mana[c]}</b></div>`).join("");
+  const mobileMeta=document.getElementById("mobileHandMeta");
+  if(mobileMeta){
+    mobileMeta.textContent=`${state.hand.length}枚｜W${state.mana.W} U${state.mana.U} B${state.mana.B} R${state.mana.R} G${state.mana.G} C${state.mana.C}`;
+  }
 
   const gy=state.graveyard.slice(-12).reverse();
   document.getElementById("graveyard").innerHTML=gy.map((n,i)=>imageCardHtml(n,"graveyard",i)).join("")||'<div style="color:#64748b">— 空 —</div>';
