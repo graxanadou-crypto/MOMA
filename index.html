@@ -11,7 +11,7 @@
   <link rel="apple-touch-icon" href="icon-192.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MoMA ソリティア 1998 — Safari/PWA版 v1.12 CPU Real Card Images 全カード効果実装</title>
+<title>MoMA ソリティア 1998 — Safari/PWA版 v1.12.1 Root CPU Images 全カード効果実装</title>
 <style>
 :root{
   --bg:#0b1220;--panel:#111827;--panel2:#172033;--line:#334155;--text:#e5e7eb;
@@ -349,7 +349,7 @@ body{
 }
 
 
-/* v1.12 CPU Real Card Images Mobile UX */
+/* v1.12.1 Root CPU Images Mobile UX */
 #mobileHandMeta{display:none}
 .mobile-detail-actions{display:none}
 
@@ -468,7 +468,7 @@ body{
   }
 }
 
-/* On desktop nothing from v1.12 CPU Real Card Images changes the established layout */
+/* On desktop nothing from v1.12.1 Root CPU Images changes the established layout */
 @media(min-width:701px){
   #handSection{position:static}
 }
@@ -1072,7 +1072,7 @@ body{
 </div>
 
 <header>
-  <h1>MoMA ソリティア 1998 — Safari/PWA版 v1.12 CPU Real Card Images 全カード効果実装</h1>
+  <h1>MoMA ソリティア 1998 — Safari/PWA版 v1.12.1 Root CPU Images 全カード効果実装</h1>
   <div class="sub">Tommi Hovi / Pro Tour Rome 1998 — Excel不要・完全オフライン対応</div>
 </header>
 <div class="wrap">
@@ -1311,7 +1311,7 @@ body{
   </div>
 
   <div class="footer">
-    v1.12 CPU Real Card Images: UB Tempo CPU対戦テストモードを追加。
+    v1.12.1 Root CPU Images: UB Tempo CPU対戦テストモードを追加。
     スマホ: 手札常時下部表示 / 1タップ選択 / ダブルタップ即実行 / 長押し詳細。<br>Mox Diamond / Scroll Rack / Abeyance / Intuition / Power Sink / Mana Vault /
     Mind Over Matter / Time Spiral / Windfall / Stroke of Genius を含む。
     </div>
@@ -1528,30 +1528,30 @@ const PHASES=[
 ];
 
 const CPU_CARD_IMAGE_MAP={
-  "Bloodstained Mire":"cpu-cards/bloodstained-mire.png",
-  "Flooded Strand":"cpu-cards/flooded-strand.png",
-  "Island":"cpu-cards/island.png",
-  "Marsh Flats":"cpu-cards/marsh-flats.png",
-  "Misty Rainforest":"cpu-cards/misty-rainforest.png",
-  "Polluted Delta":"cpu-cards/polluted-delta.png",
-  "Scalding Tarn":"cpu-cards/scalding-tarn.png",
-  "Swamp":"cpu-cards/swamp.png",
-  "Undercity Sewers":"cpu-cards/undercity-sewers.png",
-  "Underground Sea":"cpu-cards/underground-sea.png",
-  "Wasteland":"cpu-cards/wasteland.png",
-  "Moonshadow":"cpu-cards/moonshadow.png",
-  "Nethergoyf":"cpu-cards/nethergoyf.png",
-  "Orcish Bowmasters":"cpu-cards/orcish-bowmasters.png",
-  "Brainstorm":"cpu-cards/brainstorm.png",
-  "Daze":"cpu-cards/daze.png",
-  "Fatal Push":"cpu-cards/fatal-push.png",
-  "Flow State":"cpu-cards/flow-state.png",
-  "Force of Will":"cpu-cards/force-of-will.png",
-  "Ponder":"cpu-cards/ponder.png",
-  "Snuff Out":"cpu-cards/snuff-out.png",
-  "Thoughtseize":"cpu-cards/thoughtseize.png",
-  "Kaito, Bane of Nightmares":"cpu-cards/kaito-bane-of-nightmares.png",
-  "Mishra's Bauble":"cpu-cards/mishra-s-bauble.png"
+  "Bloodstained Mire":"bloodstained-mire.png",
+  "Flooded Strand":"flooded-strand.png",
+  "Island":"island.png",
+  "Marsh Flats":"marsh-flats.png",
+  "Misty Rainforest":"misty-rainforest.png",
+  "Polluted Delta":"polluted-delta.png",
+  "Scalding Tarn":"scalding-tarn.png",
+  "Swamp":"swamp.png",
+  "Undercity Sewers":"undercity-sewers.png",
+  "Underground Sea":"underground-sea.png",
+  "Wasteland":"wasteland.png",
+  "Moonshadow":"moonshadow.png",
+  "Nethergoyf":"nethergoyf.png",
+  "Orcish Bowmasters":"orcish-bowmasters.png",
+  "Brainstorm":"brainstorm.png",
+  "Daze":"daze.png",
+  "Fatal Push":"fatal-push.png",
+  "Flow State":"flow-state.png",
+  "Force of Will":"force-of-will.png",
+  "Ponder":"ponder.png",
+  "Snuff Out":"snuff-out.png",
+  "Thoughtseize":"thoughtseize.png",
+  "Kaito, Bane of Nightmares":"kaito-bane-of-nightmares.png",
+  "Mishra's Bauble":"mishra-s-bauble.png"
 };
 function cpuCardImage(name){ return CPU_CARD_IMAGE_MAP[name] || "card-back.jpg"; }
 function playerCardImage(name){ return cardImageUrl(name); }

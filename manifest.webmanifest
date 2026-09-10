@@ -1,6 +1,6 @@
 {
-  "name": "MoMA 1998 v1.12 CPU Real Card Images",
-  "short_name": "MoMA v1.12",
+  "name": "MoMA 1998 v1.12.1 Root CPU Images",
+  "short_name": "MoMA v1.12.1",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
