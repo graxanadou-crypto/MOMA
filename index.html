@@ -11,7 +11,7 @@
   <link rel="apple-touch-icon" href="icon-192.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MoMA ソリティア 1998 — Safari/PWA版 v1.1 全カード効果実装</title>
+<title>MoMA ソリティア 1998 — Safari/PWA版 v1.3 Game UI 全カード効果実装</title>
 <style>
 :root{
   --bg:#0b1220;--panel:#111827;--panel2:#172033;--line:#334155;--text:#e5e7eb;
@@ -349,7 +349,7 @@ body{
 }
 
 
-/* v1.1 Mobile UX */
+/* v1.3 Game UI Mobile UX */
 #mobileHandMeta{display:none}
 .mobile-detail-actions{display:none}
 
@@ -468,10 +468,363 @@ body{
   }
 }
 
-/* On desktop nothing from v1.1 changes the established layout */
+/* On desktop nothing from v1.3 Game UI changes the established layout */
 @media(min-width:701px){
   #handSection{position:static}
 }
+
+
+/* v1.2 UB Tempo Challenge */
+.challenge-panel{border-color:#334d70!important;background:linear-gradient(180deg,#0d1728,#080f1c)!important}
+.challenge-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#challengeModeLabel{margin-left:auto;color:#9fc9e7;font-weight:700}
+.cpu-panel{margin-top:12px;border-top:1px solid #26374d;padding-top:12px}
+.cpu-stats{display:grid;grid-template-columns:repeat(6,minmax(72px,1fr));gap:7px;margin-bottom:10px}
+.cpu-stat{background:#07101d;border:1px solid #26374d;border-radius:8px;padding:7px;text-align:center;font-size:11px;color:#94a3b8}
+.cpu-stat b{display:block;font-size:18px;color:#f8fafc;margin-top:2px}
+.cpu-zones{display:grid;grid-template-columns:1.4fr 1fr;gap:10px}
+.cpu-cards{display:flex;gap:6px;flex-wrap:wrap;min-height:48px;padding:7px;background:#060d18;border:1px solid #203047;border-radius:8px}
+.cpu-card{padding:6px 8px;border-radius:7px;background:#10233b;border:1px solid #31557d;color:#dbeafe;font-size:12px}
+.cpu-card.creature{background:#20182f;border-color:#614b81}
+.cpu-card.land{background:#20231d;border-color:#59634b}
+.cpu-cards.compact .cpu-card{font-size:10px;padding:4px 6px;opacity:.85}
+.cpu-note{margin-top:9px;color:#8ca4bd;font-size:11px;line-height:1.5}
+.challenge-result{font-weight:800}
+@media(max-width:700px){
+  .cpu-stats{grid-template-columns:repeat(3,1fr)}
+  .cpu-zones{display:block}
+  .cpu-zones>div+div{margin-top:8px}
+  #challengeModeLabel{width:100%;margin-left:0}
+  .challenge-panel{margin-bottom:6px}
+}
+
+
+/* ===== v1.3 GAME UI ===== */
+:root{
+  --bg:#050912;
+  --panel:#0b1320;
+  --panel-hi:#101d2f;
+  --line:#263b55;
+  --cyan:#1dc4ff;
+  --muted:#8ba3ba;
+}
+body{
+  background:
+    radial-gradient(circle at 50% -10%,rgba(29,196,255,.12),transparent 28%),
+    linear-gradient(180deg,#050912,#07101a 45%,#050912);
+}
+.wrap{max-width:1680px!important}
+
+.game-hud{
+  position:sticky;
+  top:0;
+  z-index:70;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:10px 14px;
+  margin:0 0 12px;
+  background:rgba(5,10,18,.94);
+  border:1px solid #243a53;
+  border-radius:0 0 14px 14px;
+  backdrop-filter:blur(12px);
+  box-shadow:0 8px 28px rgba(0,0,0,.32);
+}
+.game-brand{display:flex;align-items:center;gap:12px}
+.moma-logo{
+  font-size:28px;
+  font-weight:900;
+  letter-spacing:.08em;
+  color:#f8fbff;
+  text-shadow:0 0 16px rgba(29,196,255,.45);
+}
+.game-title{font-size:13px;font-weight:800;color:#dce8f3}
+.game-subtitle{font-size:10px;color:#6ea9c8;margin-top:2px}
+.phase-strip{display:flex;gap:6px;flex-wrap:wrap}
+.phase-strip button{min-height:38px;padding:7px 12px;font-size:12px}
+
+.arena{
+  display:grid;
+  grid-template-rows:auto auto;
+  gap:10px;
+  margin-bottom:10px;
+}
+.opponent-area{
+  position:relative;
+  overflow:hidden;
+  border-color:#365477!important;
+}
+.opponent-area:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,rgba(19,38,61,.35),transparent 65%);
+  pointer-events:none;
+}
+.opponent-header,.section-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  position:relative;
+  z-index:1;
+}
+.side-label,.mini-label,.zone-title{
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.16em;
+  color:#7297b5;
+}
+.opponent-header h2,.section-head h2{margin:2px 0 0!important}
+.mode-badge{
+  display:inline-flex;
+  margin-top:8px;
+  padding:4px 8px;
+  border:1px solid #365477;
+  border-radius:999px;
+  font-size:10px;
+  color:#9bd8f5;
+  background:#081321;
+}
+
+.opponent-life-row{
+  display:grid;
+  grid-template-columns:120px 1fr 120px;
+  gap:12px;
+  align-items:center;
+  margin:12px 0 10px;
+}
+.life-orb{
+  width:92px;height:92px;
+  border-radius:50%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  background:radial-gradient(circle at 35% 30%,#1a334e,#09111d 70%);
+  border:2px solid #315b7c;
+  box-shadow:inset 0 0 24px rgba(29,196,255,.08),0 0 22px rgba(0,0,0,.35);
+}
+.life-orb span{font-size:9px;color:#8ca6bc;font-weight:800;letter-spacing:.1em}
+.life-orb strong{font-size:34px;line-height:1;color:#fff;margin-top:3px}
+.player-life{width:72px;height:72px}
+.player-life strong{font-size:28px}
+
+.cpu-hand-visual{text-align:center}
+.card-backs{
+  display:flex;
+  justify-content:center;
+  min-height:74px;
+  padding-top:4px;
+}
+.card-backs img{
+  width:48px;
+  aspect-ratio:488/680;
+  object-fit:cover;
+  border-radius:5px;
+  border:1px solid #5b412a;
+  margin-left:-20px;
+  box-shadow:0 4px 12px rgba(0,0,0,.45);
+}
+.card-backs img:first-child{margin-left:0}
+.deck-pile{
+  position:relative;
+  width:58px;
+  margin:4px auto 0;
+}
+.deck-pile img{
+  width:58px;
+  aspect-ratio:488/680;
+  object-fit:cover;
+  border-radius:6px;
+  box-shadow:5px 5px 0 #111d2c,10px 10px 0 #0a111c;
+}
+.deck-pile b{
+  position:absolute;
+  right:-10px;bottom:-8px;
+  min-width:30px;
+  padding:4px 6px;
+  border-radius:999px;
+  background:#07101b;
+  border:1px solid #31516f;
+  color:#fff;
+}
+
+.cpu-stats{
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  position:relative;z-index:1;
+}
+.cpu-stat{padding:6px!important}
+.cpu-stat b{font-size:15px!important}
+
+.game-zone-grid{
+  grid-template-columns:1.7fr 1fr!important;
+}
+.zone-board{
+  background:#060c15;
+  border:1px solid #1f3248;
+  border-radius:10px;
+  padding:8px;
+}
+.zone-title{margin-bottom:6px}
+.cpu-cards.battlefield-style{
+  min-height:92px;
+  align-items:flex-end;
+}
+.cpu-card{
+  min-width:88px;
+  text-align:center;
+  box-shadow:0 4px 10px rgba(0,0,0,.2);
+}
+
+.battlefield-section{
+  border-color:#2f4b67!important;
+  min-height:240px;
+}
+#battlefield.card-zone{
+  min-height:160px;
+  background:
+    linear-gradient(180deg,rgba(18,34,53,.4),rgba(5,12,20,.5)),
+    repeating-linear-gradient(90deg,transparent 0 118px,rgba(64,99,130,.07) 118px 119px);
+  border-radius:10px;
+  padding:10px!important;
+}
+
+#gameShell{
+  grid-template-columns:minmax(0,1fr) 360px!important;
+}
+#gameSide{
+  top:76px!important;
+}
+#cardDetailSection{
+  border:1px solid #31577a!important;
+  box-shadow:0 0 28px rgba(29,196,255,.08),0 12px 34px rgba(0,0,0,.3);
+}
+.card-detail-image{
+  max-width:295px!important;
+  border-radius:10px!important;
+}
+
+.game-log-section{
+  max-height:190px;
+  overflow:auto;
+  border-color:#253b52!important;
+}
+#log{
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:11px!important;
+  line-height:1.45;
+}
+
+#mana{
+  grid-template-columns:repeat(6,1fr)!important;
+}
+.manaBox{
+  min-height:54px;
+  border-radius:9px!important;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+}
+.manaBox b{font-size:18px}
+
+@media(max-width:980px){
+  .game-hud{position:relative;top:auto;align-items:flex-start;flex-direction:column}
+  .phase-strip{width:100%}
+  .phase-strip button{flex:1}
+  #gameShell{display:block!important}
+  #gameSide{position:static!important}
+  .opponent-life-row{grid-template-columns:86px 1fr 78px}
+  .life-orb{width:72px;height:72px}
+  .life-orb strong{font-size:27px}
+  .deck-pile,.deck-pile img{width:48px}
+}
+
+@media(max-width:700px){
+  .wrap{padding:0 5px!important}
+  .game-hud{
+    margin:0 -5px 7px;
+    padding:7px;
+    border-radius:0;
+  }
+  .game-brand{gap:7px}
+  .moma-logo{font-size:21px}
+  .game-title{font-size:10px}
+  .game-subtitle{display:none}
+  .phase-strip{gap:4px}
+  .phase-strip button{
+    min-width:0;
+    min-height:36px;
+    padding:5px 6px;
+    font-size:10px;
+  }
+
+  .opponent-area,.battlefield-section{padding:8px!important}
+  .opponent-header h2{font-size:15px!important}
+  .challenge-toolbar button{padding:6px 8px!important;font-size:10px}
+  .opponent-life-row{
+    grid-template-columns:62px 1fr 58px;
+    gap:5px;
+    margin:8px 0;
+  }
+  .life-orb{width:56px;height:56px}
+  .life-orb strong{font-size:22px}
+  .life-orb span{font-size:7px}
+  .card-backs{min-height:58px}
+  .card-backs img{width:36px;margin-left:-16px}
+  .deck-pile,.deck-pile img{width:39px}
+  .cpu-stats{grid-template-columns:repeat(3,1fr)!important}
+  .game-zone-grid{display:block!important}
+  .zone-board+ .zone-board{margin-top:6px}
+  .cpu-cards.battlefield-style{min-height:58px}
+  .cpu-card{min-width:68px;font-size:10px!important;padding:4px!important}
+
+  .section-head .player-life{display:flex!important}
+  #battlefield.card-zone{min-height:135px}
+  #mana{grid-template-columns:repeat(6,1fr)!important;gap:3px!important}
+  .manaBox{min-height:42px;padding:3px!important;font-size:10px}
+  .manaBox b{font-size:14px}
+
+  #cardDetailSection{
+    bottom:238px!important;
+    max-height:52vh!important;
+  }
+}
+
+
+.challenge-overlay{
+  position:fixed;
+  inset:0;
+  z-index:200;
+  background:rgba(0,0,0,.72);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  backdrop-filter:blur(6px);
+}
+.challenge-overlay-card{
+  width:min(420px,92vw);
+  padding:24px;
+  border-radius:16px;
+  background:linear-gradient(180deg,#10233a,#08111d);
+  border:1px solid #35618a;
+  box-shadow:0 20px 60px rgba(0,0,0,.55),0 0 30px rgba(29,196,255,.12);
+  text-align:center;
+}
+#challengeOverlayTitle{
+  font-size:30px;
+  font-weight:900;
+  letter-spacing:.08em;
+  color:#fff;
+}
+#challengeOverlayText{
+  margin:10px 0 18px;
+  color:#9fc9e7;
+}
+.overlay-actions{display:flex;gap:8px;justify-content:center}
 
 </style>
 </head>
@@ -482,14 +835,89 @@ body{
 </div>
 
 <header>
-  <h1>MoMA ソリティア 1998 — Safari/PWA版 v1.1 全カード効果実装</h1>
+  <h1>MoMA ソリティア 1998 — Safari/PWA版 v1.3 Game UI 全カード効果実装</h1>
   <div class="sub">Tommi Hovi / Pro Tour Rome 1998 — Excel不要・完全オフライン対応</div>
 </header>
 <div class="wrap">
+  <div class="game-hud">
+    <div class="game-brand">
+      <div class="moma-logo">MoMA</div>
+      <div>
+        <div class="game-title">Magic: The Gathering — 1998 Academy</div>
+        <div class="game-subtitle">Legacy Challenge Mode</div>
+      </div>
+    </div>
+    <div class="phase-strip">
+      <button onclick="draw(1)">ドロー</button>
+      <button class="indigo" onclick="document.getElementById('battlefield')?.scrollIntoView({behavior:'smooth',block:'center'})">メイン</button>
+      <button class="purple" onclick="document.getElementById('cpuPanel')?.scrollIntoView({behavior:'smooth',block:'center'})">対戦状況</button>
+      <button class="green" onclick="endTurn()">ターン終了</button>
+      <button onclick="undo()">戻す</button>
+    </div>
+  </div>
+
   <div class="status" id="status"></div>
 
-  <div class="section">
-    <h2>戦場</h2>
+  <div class="arena">
+    <section class="opponent-area section">
+      <div class="opponent-header">
+        <div>
+          <div class="side-label">OPPONENT</div>
+          <h2>Legacy UB Tempo</h2>
+        </div>
+        <div class="challenge-toolbar">
+          <button class="green" onclick="startSoloMode()">一人回し</button>
+          <button class="indigo" onclick="startUBChallenge()">挑戦開始</button>
+        </div>
+      </div>
+
+      <div id="challengeModeLabel" class="mode-badge">現在: 一人回し</div>
+
+      <div id="cpuPanel" class="cpu-panel" style="display:none">
+        <div class="opponent-life-row">
+          <div class="life-orb opponent-life">
+            <span>CPU LIFE</span>
+            <strong id="cpuLifeBig">20</strong>
+          </div>
+          <div class="cpu-hand-visual">
+            <div class="mini-label">CPU HAND</div>
+            <div id="cpuHandBacks" class="card-backs"></div>
+          </div>
+          <div class="opponent-deck">
+            <div class="mini-label">LIBRARY</div>
+            <div class="deck-pile">
+              <img src="card-back.jpg" alt="CPU Library">
+              <b id="cpuLibraryBig">53</b>
+            </div>
+          </div>
+        </div>
+
+        <div class="cpu-stats" id="cpuStats"></div>
+
+        <div class="cpu-zones game-zone-grid">
+          <div class="zone-board">
+            <div class="zone-title">CPU BATTLEFIELD</div>
+            <div id="cpuBattlefield" class="cpu-cards battlefield-style"></div>
+          </div>
+          <div class="zone-board">
+            <div class="zone-title">CPU GRAVEYARD</div>
+            <div id="cpuGraveyard" class="cpu-cards compact"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section battlefield-section">
+      <div class="section-head">
+        <div>
+          <div class="side-label">PLAYER</div>
+          <h2>戦場</h2>
+        </div>
+        <div class="life-orb player-life">
+          <span>LIFE</span>
+          <strong id="playerLifeBig">20</strong>
+        </div>
+      </div>
     <div class="zone" id="battlefield" class="zone card-zone"></div>
     <div class="controls">
       <button class="indigo" onclick="activateSelected()">選択カードの能力を起動</button>
@@ -512,7 +940,8 @@ body{
   </div>
 
   <div class="grid2">
-    <div class="section">
+    </section></div>
+<div class="section">
       <h2>マナ・プール</h2>
       <div class="mana" id="mana"></div>
       <div class="controls">
@@ -587,7 +1016,7 @@ body{
   </div>
 
   <div class="footer">
-    v1.1: デッキ内17種類すべての専用効果処理を実装。
+    v1.3 Game UI: UB Tempo CPU対戦テストモードを追加。
     スマホ: 手札常時下部表示 / 1タップ選択 / ダブルタップ即実行 / 長押し詳細。<br>Mox Diamond / Scroll Rack / Abeyance / Intuition / Power Sink / Mana Vault /
     Mind Over Matter / Time Spiral / Windfall / Stroke of Genius を含む。
     </div>
@@ -600,6 +1029,303 @@ const decklist = [
   [3,"Mind Over Matter"],[3,"Abeyance"],[3,"Intuition"],[3,"Power Sink"],
   [4,"Stroke of Genius"],[4,"Time Spiral"],[4,"Windfall"]
 ];
+
+
+const ubTempoDecklist = [
+  [1,"Bloodstained Mire"],[1,"Flooded Strand"],[1,"Island"],[1,"Marsh Flats"],[1,"Misty Rainforest"],
+  [4,"Polluted Delta"],[1,"Scalding Tarn"],[1,"Swamp"],[1,"Undercity Sewers"],[3,"Underground Sea"],[4,"Wasteland"],
+  [4,"Moonshadow"],[4,"Nethergoyf"],[3,"Orcish Bowmasters"],
+  [4,"Brainstorm"],[4,"Daze"],[3,"Fatal Push"],[2,"Flow State"],[4,"Force of Will"],
+  [3,"Ponder"],[1,"Snuff Out"],[4,"Thoughtseize"],
+  [2,"Kaito, Bane of Nightmares"],[3,"Mishra's Bauble"]
+];
+
+const cpuLandNames=new Set(["Bloodstained Mire","Flooded Strand","Island","Marsh Flats","Misty Rainforest",
+  "Polluted Delta","Scalding Tarn","Swamp","Undercity Sewers","Underground Sea","Wasteland"]);
+const cpuCreatureNames=new Set(["Moonshadow","Nethergoyf","Orcish Bowmasters"]);
+const cpuBlueCards=new Set(["Brainstorm","Daze","Flow State","Force of Will","Ponder","Kaito, Bane of Nightmares"]);
+const cpuCriticalTargets=new Set(["Mind Over Matter","Time Spiral","Windfall","Stroke of Genius","Tolarian Academy"]);
+
+function makeUBDeck(){
+  const d=[];
+  for(const [q,n] of ubTempoDecklist) for(let i=0;i<q;i++) d.push(n);
+  return shuffle(d);
+}
+
+function initCPU(){
+  return {
+    life:20,library:makeUBDeck(),hand:[],battlefield:[],graveyard:[],
+    landPlayed:false,turn:0,black:0,blue:0,generic:0,bowmasterTokens:0,result:""
+  };
+}
+
+function cpuDraw(n=1){
+  if(!state.cpu) return;
+  for(let i=0;i<n;i++){
+    if(!state.cpu.library.length){
+      state.cpu.result="PLAYER WIN — CPU library out";
+      state.challengeOver=true;
+      return;
+    }
+    state.cpu.hand.push(state.cpu.library.shift());
+  }
+}
+
+function cpuOpening(){
+  state.cpu=initCPU();
+  for(let i=0;i<7;i++) cpuDraw();
+}
+
+function cpuManaCount(){
+  if(!state.cpu) return 0;
+  return state.cpu.battlefield.filter(x=>cpuLandNames.has(x.name)).length;
+}
+
+function cpuHasUntappedLand(){
+  return state.cpu && state.cpu.battlefield.some(x=>cpuLandNames.has(x.name)&&!x.tapped);
+}
+
+function cpuTapLand(prefer="any"){
+  if(!state.cpu) return false;
+  let idx=-1;
+  if(prefer==="U"){
+    idx=state.cpu.battlefield.findIndex(x=>!x.tapped&&["Underground Sea","Island","Undercity Sewers"].includes(x.name));
+  } else if(prefer==="B"){
+    idx=state.cpu.battlefield.findIndex(x=>!x.tapped&&["Underground Sea","Swamp","Undercity Sewers"].includes(x.name));
+  }
+  if(idx<0) idx=state.cpu.battlefield.findIndex(x=>cpuLandNames.has(x.name)&&!x.tapped&&x.name!=="Wasteland");
+  if(idx<0) idx=state.cpu.battlefield.findIndex(x=>cpuLandNames.has(x.name)&&!x.tapped);
+  if(idx<0) return false;
+  state.cpu.battlefield[idx].tapped=true;
+  return true;
+}
+
+function cpuUntap(){
+  if(!state.cpu) return;
+  state.cpu.battlefield.forEach(x=>x.tapped=false);
+}
+
+function cpuMoveHandToGrave(name){
+  const i=state.cpu.hand.indexOf(name);
+  if(i<0) return false;
+  state.cpu.hand.splice(i,1); state.cpu.graveyard.push(name); return true;
+}
+
+function cpuPlayLand(){
+  if(!state.cpu || state.cpu.landPlayed) return;
+  let idx=state.cpu.hand.findIndex(n=>n==="Wasteland");
+  const playerAcademy=state.battlefield.some(p=>p.name==="Tolarian Academy");
+  if(!playerAcademy || idx<0){
+    idx=state.cpu.hand.findIndex(n=>cpuLandNames.has(n)&&n!=="Wasteland");
+    if(idx<0) idx=state.cpu.hand.findIndex(n=>cpuLandNames.has(n));
+  }
+  if(idx<0) return;
+  let name=state.cpu.hand.splice(idx,1)[0];
+  // Fetchlands are abstracted as Underground Sea if possible.
+  if(["Bloodstained Mire","Flooded Strand","Marsh Flats","Misty Rainforest","Polluted Delta","Scalding Tarn"].includes(name)){
+    state.cpu.life-=1;
+    name="Underground Sea";
+    log("CPU: フェッチランドを起動 → Underground Sea（簡略処理）");
+  }else{
+    log(`CPU: ${name} をプレイ`);
+  }
+  state.cpu.battlefield.push({name,tapped:false});
+  state.cpu.landPlayed=true;
+}
+
+function cpuUseWasteland(){
+  if(!state.cpu) return;
+  const wi=state.cpu.battlefield.findIndex(x=>x.name==="Wasteland"&&!x.tapped);
+  let target=state.battlefield.findIndex(x=>x.name==="Tolarian Academy");
+  if(target<0) target=state.battlefield.findIndex(x=>["Ancient Tomb","City of Brass"].includes(x.name));
+  if(wi<0||target<0) return;
+  const destroyed=state.battlefield.splice(target,1)[0];
+  state.graveyard.push(destroyed.name);
+  state.cpu.graveyard.push("Wasteland");
+  state.cpu.battlefield.splice(wi,1);
+  log(`CPU: 《Wasteland》で ${cardDisplayName(destroyed.name)} を破壊`);
+  selected={zone:null,index:null};
+}
+
+function cpuBestThoughtseizeTarget(){
+  const priority=["Mind Over Matter","Time Spiral","Windfall","Intuition","Stroke of Genius","Mana Vault","Voltaic Key","Scroll Rack","Abeyance","Power Sink","Lotus Petal","Mox Diamond"];
+  for(const n of priority) if(state.hand.includes(n)) return state.hand.indexOf(n);
+  return state.hand.findIndex(n=>!lands.has(n));
+}
+
+function cpuCastThoughtseize(){
+  if(!state.cpu || !state.cpu.hand.includes("Thoughtseize")) return false;
+  if(!cpuTapLand("B")) return false;
+  cpuMoveHandToGrave("Thoughtseize");
+  state.cpu.life-=2;
+  const ti=cpuBestThoughtseizeTarget();
+  if(ti>=0){
+    const [hit]=state.hand.splice(ti,1);
+    state.graveyard.push(hit); state.cardsDiscarded++;
+    log(`CPU: 《Thoughtseize》→ ${cardDisplayName(hit)} を捨てさせた`);
+  } else log("CPU: 《Thoughtseize》— 有効な対象なし");
+  return true;
+}
+
+function cpuCanForce(){
+  if(!state.cpu || !state.cpu.hand.includes("Force of Will")) return false;
+  return state.cpu.hand.some(n=>n!=="Force of Will"&&cpuBlueCards.has(n));
+}
+
+function cpuUseForce(spellName){
+  if(!cpuCanForce()) return false;
+  const fi=state.cpu.hand.indexOf("Force of Will");
+  state.cpu.hand.splice(fi,1);
+  let blue=state.cpu.hand.findIndex(n=>cpuBlueCards.has(n));
+  const pitch=state.cpu.hand.splice(blue,1)[0];
+  state.cpu.graveyard.push("Force of Will",pitch);
+  state.cpu.life-=1;
+  log(`CPU: 《Force of Will》(${pitch}を追放扱い) → ${cardDisplayName(spellName)} を打ち消す`);
+  return true;
+}
+
+function cpuUseDaze(spellName){
+  if(!state.cpu || !state.cpu.hand.includes("Daze")) return false;
+  const island=state.cpu.battlefield.findIndex(x=>["Underground Sea","Island"].includes(x.name));
+  if(island<0) return false;
+  // Ask whether player can/wants to pay 1. This uses current player's mana pool.
+  if(colors.reduce((s,c)=>s+state.mana[c],0)>=1){
+    if(confirm(`CPUが《Daze》を唱えました。\n${cardDisplayName(spellName)} を守るため追加で1マナ支払いますか？`)){
+      if(payGeneric(1)){
+        cpuMoveHandToGrave("Daze");
+        const land=state.cpu.battlefield.splice(island,1)[0];
+        state.cpu.hand.push(land.name);
+        log(`CPU: 《Daze》→ プレイヤーが1マナ支払い解決`);
+        return false;
+      }
+    }
+  }
+  cpuMoveHandToGrave("Daze");
+  const land=state.cpu.battlefield.splice(island,1)[0];
+  state.cpu.hand.push(land.name);
+  log(`CPU: 《Daze》→ ${cardDisplayName(spellName)} を打ち消す`);
+  return true;
+}
+
+function cpuCounterAfterPaid(spellName){
+  if(state.mode!=="challenge" || !state.cpu || state.challengeOver || state.abeyanceActive) return false;
+  // Prioritize Daze early, Force on must-counter combo/wheel spells.
+  if(state.turn<=3 && cpuUseDaze(spellName)) return true;
+  if(cpuCriticalTargets.has(spellName) && cpuUseForce(spellName)) return true;
+  // Counter other engines only when CPU has surplus Force.
+  if(["Intuition","Mana Vault","Scroll Rack"].includes(spellName) && state.cpu.hand.filter(n=>n==="Force of Will").length>0){
+    if(Math.random()<0.45 && cpuUseForce(spellName)) return true;
+  }
+  return false;
+}
+
+function cpuCastCantrip(){
+  if(!state.cpu) return false;
+  for(const n of ["Ponder","Brainstorm","Mishra's Bauble","Flow State"]){
+    if(state.cpu.hand.includes(n)){
+      if(n!=="Mishra's Bauble" && !cpuTapLand("U")) continue;
+      cpuMoveHandToGrave(n);
+      cpuDraw(1);
+      log(`CPU: 《${n}》で手札を整えた（簡略処理）`);
+      return true;
+    }
+  }
+  return false;
+}
+
+function cpuCastCreature(){
+  if(!state.cpu) return false;
+  // Bowmasters has priority against a wheel/draw-heavy deck.
+  const order=["Orcish Bowmasters","Nethergoyf","Moonshadow"];
+  for(const n of order){
+    const i=state.cpu.hand.indexOf(n);
+    if(i<0) continue;
+    const cost=n==="Orcish Bowmasters"?2:1;
+    const available=state.cpu.battlefield.filter(x=>cpuLandNames.has(x.name)&&!x.tapped).length;
+    if(available<cost) continue;
+    let ok=true;
+    for(let k=0;k<cost;k++) if(!cpuTapLand(k===0?"B":"any")) ok=false;
+    if(!ok) continue;
+    state.cpu.hand.splice(i,1);
+    state.cpu.battlefield.push({name:n,tapped:false,summoning:true});
+    log(`CPU: 《${n}》を展開`);
+    return true;
+  }
+  return false;
+}
+
+function cpuKaito(){
+  if(!state.cpu || !state.cpu.hand.includes("Kaito, Bane of Nightmares")) return false;
+  if(cpuManaCount()<3) return false;
+  let paid=0;
+  while(paid<3 && cpuTapLand(paid===0?"U":"any")) paid++;
+  if(paid<3){cpuUntap();return false;}
+  cpuMoveHandToGrave("Kaito, Bane of Nightmares");
+  state.cpu.battlefield.push({name:"Kaito, Bane of Nightmares",tapped:false});
+  log("CPU: 《Kaito, Bane of Nightmares》を展開（簡略処理）");
+  return true;
+}
+
+function cpuCreaturePower(n){
+  if(n==="Orcish Bowmasters") return 1;
+  if(n==="Nethergoyf") return 3;
+  if(n==="Moonshadow") return 3;
+  return 0;
+}
+
+
+function showChallengeResult(win,text){
+  const ov=document.getElementById("challengeOverlay");
+  const title=document.getElementById("challengeOverlayTitle");
+  const body=document.getElementById("challengeOverlayText");
+  if(!ov||!title||!body) return alert(text);
+  title.textContent=win?"VICTORY":"DEFEAT";
+  body.textContent=text;
+  title.style.color=win?"#7dd3fc":"#fca5a5";
+  ov.style.display="flex";
+}
+
+function cpuCombat(){
+  if(!state.cpu) return;
+  let dmg=state.cpu.bowmasterTokens||0;
+  for(const p of state.cpu.battlefield){
+    if(cpuCreatureNames.has(p.name) && !p.summoning) dmg+=cpuCreaturePower(p.name);
+  }
+  if(dmg>0){
+    state.life-=dmg;
+    log(`CPU: 攻撃 → ${dmg}点ダメージ（あなた ${state.life}）`);
+  }
+  state.cpu.battlefield.forEach(p=>p.summoning=false);
+  if(state.life<=0){
+    state.challengeOver=true;
+    state.cpu.result="CPU WIN";
+    showChallengeResult(false,"Legacy UB Tempoに敗北しました。");
+  }
+}
+
+function cpuTurn(){
+  if(state.mode!=="challenge"||!state.cpu||state.challengeOver) return;
+  state.cpu.turn++;
+  state.cpu.landPlayed=false;
+  cpuUntap();
+  cpuDraw(1);
+  log(`— CPU Turn ${state.cpu.turn} —`);
+  cpuPlayLand();
+  cpuUseWasteland();
+  cpuCastThoughtseize();
+  // Use remaining mana for pressure/card selection.
+  cpuCastCreature();
+  cpuCastCantrip();
+  cpuKaito();
+  cpuCombat();
+}
+
+function startSoloMode(){
+  newGame("solo");
+}
+function startUBChallenge(){
+  newGame("challenge");
+}
 
 const artifacts = new Set(["Lotus Petal","Mana Vault","Mox Diamond","Scroll Rack","Voltaic Key"]);
 const lands = new Set(["Ancient Tomb","City of Brass","Tolarian Academy","Tundra","Volcanic Island"]);
@@ -762,7 +1488,7 @@ function mobilePrimaryAction(){
 
 function initialState(){
   return {
-    turn:1,life:20,storm:0,library:[],hand:[],battlefield:[],graveyard:[],exile:[],
+    turn:1,life:20,storm:0,library:[],hand:[],battlefield:[],graveyard:[],exile:[],mode:"solo",cpu:null,challengeOver:false,
     mana:{W:0,U:0,B:0,R:0,G:0,C:0},landsPlayed:0,handPage:1,
     oppLibrary:53,oppHand:7,oppGraveyard:0,oppMana:0,abeyanceActive:false,spellsCast:0,cardsDrawn:0,cardsDiscarded:0,
     maxStorm:0,maxMana:0,maxHand:7,winTurn:0,log:[]
@@ -795,11 +1521,16 @@ function updateStats(){
   state.maxMana=Math.max(state.maxMana,mana);
   state.maxHand=Math.max(state.maxHand,state.hand.length);
 }
-function newGame(){
-  state=initialState(); undoState=null; selected={zone:null,index:null}; closeCardDetail();
+function newGame(mode="solo"){
+  state=initialState(); state.mode=mode; undoState=null; selected={zone:null,index:null}; closeCardDetail();
   state.library=makeDeck();
   for(let i=0;i<7;i++) draw(1,false);
-  log("新しいゲーム開始");
+  if(mode==="challenge"){
+    cpuOpening();
+    log("UB Tempo Challenge 開始 — あなたが先手");
+  }else{
+    log("新しい一人回しゲーム開始");
+  }
   render();
 }
 function draw(n=1,doSnap=true){
@@ -810,6 +1541,15 @@ function draw(n=1,doSnap=true){
     state.hand.push(state.library.shift()); c++;
   }
   state.cardsDrawn+=c;
+  if(state.mode==="challenge" && state.cpu && c>1 && state.cpu.battlefield.some(p=>p.name==="Orcish Bowmasters")){
+    const extra=c;
+    if(extra>0){
+      state.life-=extra;
+      state.cpu.bowmasterTokens=(state.cpu.bowmasterTokens||0)+extra;
+      log(`CPU: 《Orcish Bowmasters》が${extra}回誘発 → ${extra}点 + Orc Army強化`);
+      if(state.life<=0){state.challengeOver=true;state.cpu.result="CPU WIN";showChallengeResult(false,"Legacy UB Tempoに敗北しました。");}
+    }
+  }
   if(doSnap) log(`${c}枚ドロー`);
   normalizePage(); render();
 }
@@ -918,6 +1658,8 @@ function playSelected(){
     undo();
     return alert(`《${cardDisplayName(name)}》のマナ・コストを支払えません。`);
   }
+
+  if(cpuCounterAfterPaid(name)) return sendPlayerSpellToGraveAsCountered(idx,name);
 
   if(name==="Mox Diamond"){
     state.hand.splice(idx,1);
@@ -1118,6 +1860,20 @@ function activateSelected(){
   render();
 }
 
+
+function sendPlayerSpellToGraveAsCountered(idx,n){
+  if(state.hand[idx]===n) state.hand.splice(idx,1);
+  else{
+    const i=state.hand.indexOf(n);
+    if(i>=0) state.hand.splice(i,1);
+  }
+  state.graveyard.push(n);
+  state.storm++; state.spellsCast++;
+  selected={zone:null,index:null};
+  closeCardDetail(); normalizePage(); render();
+  return true;
+}
+
 function castSelected(){
   if(selected.zone!=="hand") return alert("手札の呪文を選択してください。");
   const idx=selected.index,n=state.hand[idx];
@@ -1125,15 +1881,18 @@ function castSelected(){
 
   if(n==="Mind Over Matter"){
     if(!payCost(2,{U:4})){undo();return alert("《精神力》のコスト 2UUUU を支払えません。");}
+    if(cpuCounterAfterPaid(n)) return sendPlayerSpellToGraveAsCountered(idx,n);
     state.hand.splice(idx,1); state.battlefield.push({name:n,tapped:false});
     state.storm++; state.spellsCast++; log("《精神力》を唱えて戦場へ");
   }else if(n==="Abeyance"){
     if(!payCost(1,{W:1})){undo();return alert("《中断》のコスト 1W を支払えません。");}
+    if(cpuCounterAfterPaid(n)) return sendPlayerSpellToGraveAsCountered(idx,n);
     state.hand.splice(idx,1); state.graveyard.push(n);
     state.storm++; state.spellsCast++; state.abeyanceActive=true;
     draw(1,false); log("《中断》を相手に解決: 妨害を封じ、1枚ドロー");
   }else if(n==="Intuition"){
     if(!payCost(2,{U:1})){undo();return alert("《直観》のコスト 2U を支払えません。");}
+    if(cpuCounterAfterPaid(n)) return sendPlayerSpellToGraveAsCountered(idx,n);
     if(state.library.length<3){undo();return alert("ライブラリーに3枚以上必要です。");}
     state.hand.splice(idx,1); state.graveyard.push(n);
     state.storm++; state.spellsCast++;
@@ -1146,8 +1905,17 @@ function castSelected(){
     const names=chosen.map(i=>state.library[i]);
     [...chosen].sort((a,b)=>b-a).forEach(i=>state.library.splice(i,1));
     const rows=names.map((x,i)=>`${i+1}: ${cardDisplayName(x)} / ${x}`).join("\n");
-    let pick=parseInt(prompt(`相手が手札に加える1枚を選びます。\n${rows}\n（一人回しなので手動選択）`,"1"),10)-1;
-    if(!(pick>=0&&pick<3)) pick=0;
+    let pick=0;
+    if(state.mode==="challenge"){
+      const value={"Mind Over Matter":100,"Time Spiral":95,"Windfall":88,"Stroke of Genius":85,"Tolarian Academy":82,
+        "Intuition":75,"Mana Vault":70,"Voltaic Key":62,"Scroll Rack":55,"Mox Diamond":48,"Lotus Petal":45,
+        "Ancient Tomb":42,"City of Brass":40,"Tundra":38,"Volcanic Island":38,"Abeyance":35,"Power Sink":30};
+      pick=names.map((n,i)=>[value[n]||20,i]).sort((a,b)=>a[0]-b[0])[0][1];
+      log(`CPU: 《直観》で ${cardDisplayName(names[pick])} をあなたの手札に選択`);
+    }else{
+      pick=parseInt(prompt(`相手が手札に加える1枚を選びます。\n${rows}\n（一人回しなので手動選択）`,"1"),10)-1;
+      if(!(pick>=0&&pick<3)) pick=0;
+    }
     state.hand.push(names[pick]);
     names.forEach((x,i)=>{if(i!==pick)state.graveyard.push(x);});
     state.library=shuffle(state.library);
@@ -1156,6 +1924,7 @@ function castSelected(){
     const x=parseInt(prompt("《魔力消沈》のXを入力してください。","1"),10);
     if(isNaN(x)||x<0){undo();return;}
     if(!payCost(x,{U:1})){undo();return alert("《魔力消沈》のコスト XU を支払えません。");}
+    if(cpuCounterAfterPaid(n)) return sendPlayerSpellToGraveAsCountered(idx,n);
     state.hand.splice(idx,1); state.graveyard.push(n);
     state.storm++; state.spellsCast++;
     const result=(prompt("相手はXを支払いますか？ PAY / NOPAY","NOPAY")||"NOPAY").toUpperCase();
@@ -1166,38 +1935,68 @@ function castSelected(){
     }
   }else if(n==="Time Spiral"){
     if(!payCost(4,{U:2})){undo();return alert("《時のらせん》のコスト 4UU を支払えません。");}
+    if(cpuCounterAfterPaid(n)) return sendPlayerSpellToGraveAsCountered(idx,n);
     state.hand.splice(idx,1); state.storm++; state.spellsCast++;
     const pool=[...state.library,...state.hand,...state.graveyard];
     state.library=shuffle(pool); state.hand=[]; state.graveyard=[]; state.exile.push("Time Spiral");
-    state.oppLibrary=Math.max(0,state.oppLibrary+state.oppHand+(state.oppGraveyard||0));
-    state.oppHand=0; state.oppGraveyard=0;
-    const od=Math.min(7,state.oppLibrary); state.oppLibrary-=od; state.oppHand=od;
+    if(state.mode==="challenge"&&state.cpu){
+      state.cpu.library=shuffle([...state.cpu.library,...state.cpu.hand,...state.cpu.graveyard]);
+      state.cpu.hand=[]; state.cpu.graveyard=[];
+      cpuDraw(7);
+    }else{
+      state.oppLibrary=Math.max(0,state.oppLibrary+state.oppHand+(state.oppGraveyard||0));
+      state.oppHand=0; state.oppGraveyard=0;
+      const od=Math.min(7,state.oppLibrary); state.oppLibrary-=od; state.oppHand=od;
+    }
     draw(7,false); untapUpToSixLands();
     log("《時のらせん》を解決: 7枚引き直し、最大6土地アンタップ");
   }else if(n==="Windfall"){
     if(!payCost(2,{U:1})){undo();return alert("《意外な授かり物》のコスト 2U を支払えません。");}
+    if(cpuCounterAfterPaid(n)) return sendPlayerSpellToGraveAsCountered(idx,n);
     state.hand.splice(idx,1); state.storm++; state.spellsCast++;
-    const selfDiscard=state.hand.length,oppDiscard=state.oppHand;
+    const selfDiscard=state.hand.length;
+    const oppDiscard=(state.mode==="challenge"&&state.cpu)?state.cpu.hand.length:state.oppHand;
     const drawCount=Math.max(selfDiscard,oppDiscard);
     state.graveyard.push(...state.hand,"Windfall"); state.cardsDiscarded+=selfDiscard; state.hand=[];
-    state.oppGraveyard=(state.oppGraveyard||0)+oppDiscard; state.oppHand=0;
-    draw(drawCount,false);
-    const od=Math.min(drawCount,state.oppLibrary); state.oppLibrary-=od; state.oppHand+=od;
-    if(od<drawCount){state.winTurn=state.turn;alert("相手が必要枚数を引けず、一人回し勝利！");}
+    if(state.mode==="challenge"&&state.cpu){
+      state.cpu.graveyard.push(...state.cpu.hand); state.cpu.hand=[];
+      draw(drawCount,false);
+      const before=state.cpu.library.length; cpuDraw(drawCount);
+      if(before<drawCount&&!state.challengeOver){
+        state.winTurn=state.turn;state.challengeOver=true;state.cpu.result="PLAYER WIN";
+        showChallengeResult(true,"Legacy UB Tempoに勝利しました！");
+      }
+    }else{
+      state.oppGraveyard=(state.oppGraveyard||0)+oppDiscard; state.oppHand=0;
+      draw(drawCount,false);
+      const od=Math.min(drawCount,state.oppLibrary); state.oppLibrary-=od; state.oppHand+=od;
+      if(od<drawCount){state.winTurn=state.turn;alert("相手が必要枚数を引けず、一人回し勝利！");}
+    }
     log(`《意外な授かり物》: 最大${drawCount}枚を参照して各プレイヤーがドロー`);
   }else if(n==="Stroke of Genius"){
     const x=parseInt(prompt("Xの値を入力してください","7"),10);
     if(isNaN(x)||x<0){undo();return;}
     if(!payCost(x+2,{U:1})){undo();return alert("《天才のひらめき》のコスト X2U を支払えません。");}
+    if(cpuCounterAfterPaid(n)) return sendPlayerSpellToGraveAsCountered(idx,n);
     const target=(prompt("対象: SELF=自分 / OPP=相手","SELF")||"").toUpperCase();
     if(!["SELF","OPP"].includes(target)){undo();return;}
     state.hand.splice(idx,1); state.graveyard.push(n); state.storm++; state.spellsCast++;
     if(target==="SELF"){
       draw(x,false); log(`《天才のひらめき》: 自分が${x}枚ドロー`);
     }else{
-      const od=Math.min(x,state.oppLibrary); state.oppLibrary-=od; state.oppHand+=od;
-      log(`《天才のひらめき》: 相手に${x}枚ドローを要求`);
-      if(od<x){state.winTurn=state.turn;alert("一人回し勝利！ 相手は必要枚数を引けません。");}
+      if(state.mode==="challenge"&&state.cpu){
+        const before=state.cpu.library.length;
+        cpuDraw(x);
+        log(`《天才のひらめき》: CPUに${x}枚ドローを要求`);
+        if(before<x){
+          state.winTurn=state.turn;state.challengeOver=true;state.cpu.result="PLAYER WIN";
+          showChallengeResult(true,"Legacy UB Tempoに勝利しました！");
+        }
+      }else{
+        const od=Math.min(x,state.oppLibrary); state.oppLibrary-=od; state.oppHand+=od;
+        log(`《天才のひらめき》: 相手に${x}枚ドローを要求`);
+        if(od<x){state.winTurn=state.turn;alert("一人回し勝利！ 相手は必要枚数を引けません。");}
+      }
     }
   }else if(artifacts.has(n)){
     undoState=null; return playSelected();
@@ -1215,15 +2014,27 @@ function untapStep(){
 }
 function endTurn(){
   snapshot();
-  state.turn++; state.storm=0; state.landsPlayed=0; state.abeyanceActive=false;
+  state.abeyanceActive=false;
   colors.forEach(c=>state.mana[c]=0);
+
+  if(state.mode==="challenge" && !state.challengeOver){
+    cpuTurn();
+    if(state.challengeOver){render();return;}
+  }
+
+  state.turn++; state.storm=0; state.landsPlayed=0;
   state.battlefield.forEach((p,i)=>{if(p.name!=="Mana Vault")setPermanentTapped(i,false,"アンタップ・ステップ");});
   const tappedVaults=state.battlefield.filter(p=>p.name==="Mana Vault"&&p.tapped).length;
   if(tappedVaults){
     state.life-=tappedVaults;
     log(`《魔力の櫃》: ドロー・ステップに${tappedVaults}点のダメージ`);
   }
-  draw(1,false); log(`ターン${state.turn}開始`); render();
+  draw(1,false);
+  log(`— Player Turn ${state.turn} —`);
+  if(state.life<=0 && state.mode==="challenge"){
+    state.challengeOver=true;state.cpu.result="CPU WIN";
+  }
+  render();
 }
 
 function saveState(){
@@ -1337,6 +2148,36 @@ function render(){
     ["マナ",manaTotal],["相手ライブラリー",state.oppLibrary]
   ];
   document.getElementById("status").innerHTML=stats.map(([k,v])=>`<div class="stat">${k}<b>${v}</b></div>`).join("");
+  const modeLabel=document.getElementById("challengeModeLabel");
+  const cpuPanel=document.getElementById("cpuPanel");
+  if(modeLabel) modeLabel.textContent=state.mode==="challenge"?"現在: UB Tempo Challenge":"現在: 一人回し";
+  if(cpuPanel){
+    cpuPanel.style.display=state.mode==="challenge"?"block":"none";
+    if(state.mode==="challenge"&&state.cpu){
+      const cs=[
+        ["CPU LIFE",state.cpu.life],["HAND",state.cpu.hand.length],["LIB",state.cpu.library.length],
+        ["GRAVE",state.cpu.graveyard.length],["TURN",state.cpu.turn],["RESULT",state.cpu.result||"PLAYING"]
+      ];
+      document.getElementById("cpuStats").innerHTML=cs.map(([k,v])=>`<div class="cpu-stat">${k}<b class="${k==="RESULT"?"challenge-result":""}">${v}</b></div>`).join("");
+      document.getElementById("cpuBattlefield").innerHTML=state.cpu.battlefield.map(p=>{
+        const cls=cpuCreatureNames.has(p.name)?"creature":cpuLandNames.has(p.name)?"land":"";
+        return `<span class="cpu-card ${cls}">${p.name}${p.tapped?" ↷":""}</span>`;
+      }).join("")||'<span style="color:#64748b">— empty —</span>';
+      document.getElementById("cpuGraveyard").innerHTML=state.cpu.graveyard.slice(-14).reverse().map(n=>`<span class="cpu-card">${n}</span>`).join("")||'<span style="color:#64748b">— empty —</span>';
+
+      const cpuLifeBig=document.getElementById("cpuLifeBig");
+      const cpuLibraryBig=document.getElementById("cpuLibraryBig");
+      const cpuHandBacks=document.getElementById("cpuHandBacks");
+      if(cpuLifeBig) cpuLifeBig.textContent=state.cpu.life;
+      if(cpuLibraryBig) cpuLibraryBig.textContent=state.cpu.library.length;
+      if(cpuHandBacks){
+        const shown=Math.min(state.cpu.hand.length,10);
+        cpuHandBacks.innerHTML=Array.from({length:shown},()=>'<img src="card-back.jpg" alt="CPU card">').join("");
+      }
+    }
+  }
+  const playerLifeBig=document.getElementById("playerLifeBig");
+  if(playerLifeBig) playerLifeBig.textContent=state.life;
 
   document.getElementById("battlefield").innerHTML=state.battlefield.map((p,i)=>
     imageCardHtml(p.name,"battlefield",i,p.tapped?"tapped":"")
@@ -1389,6 +2230,18 @@ newGame();
   }
 })();
 </script>
+
+
+<div id="challengeOverlay" class="challenge-overlay" style="display:none">
+  <div class="challenge-overlay-card">
+    <div id="challengeOverlayTitle">RESULT</div>
+    <div id="challengeOverlayText"></div>
+    <div class="overlay-actions">
+      <button class="indigo" onclick="document.getElementById('challengeOverlay').style.display='none';startUBChallenge()">再挑戦</button>
+      <button onclick="document.getElementById('challengeOverlay').style.display='none'">閉じる</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>

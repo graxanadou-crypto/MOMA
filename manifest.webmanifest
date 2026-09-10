@@ -1,6 +1,6 @@
 {
-  "name": "MoMA ソリティア 1998 v1.1",
-  "short_name": "MoMA",
+  "name": "MoMA 1998 v1.3 Game UI",
+  "short_name": "MoMA v1.3",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
