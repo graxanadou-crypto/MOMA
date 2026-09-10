@@ -11,7 +11,7 @@
   <link rel="apple-touch-icon" href="icon-192.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MoMA ソリティア 1998 — Safari/PWA版 v1.3 Game UI 全カード効果実装</title>
+<title>MoMA ソリティア 1998 — Safari/PWA版 v1.11 Current Mulligan 全カード効果実装</title>
 <style>
 :root{
   --bg:#0b1220;--panel:#111827;--panel2:#172033;--line:#334155;--text:#e5e7eb;
@@ -349,7 +349,7 @@ body{
 }
 
 
-/* v1.3 Game UI Mobile UX */
+/* v1.11 Current Mulligan Mobile UX */
 #mobileHandMeta{display:none}
 .mobile-detail-actions{display:none}
 
@@ -468,7 +468,7 @@ body{
   }
 }
 
-/* On desktop nothing from v1.3 Game UI changes the established layout */
+/* On desktop nothing from v1.11 Current Mulligan changes the established layout */
 @media(min-width:701px){
   #handSection{position:static}
 }
@@ -826,6 +826,242 @@ body{
 }
 .overlay-actions{display:flex;gap:8px;justify-content:center}
 
+
+/* ===== v1.4 BATTLE SYSTEM ===== */
+.phase-controls{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.phase-strip{display:grid!important;grid-template-columns:repeat(7,minmax(72px,1fr));gap:4px!important}
+.phase-strip button{
+  border:1px solid #29415b!important;
+  background:#091321!important;
+  color:#8fa8bd!important;
+}
+.phase-strip button.phase-active{
+  color:#fff!important;
+  background:linear-gradient(180deg,#185a7d,#0d334b)!important;
+  border-color:#2fc4ff!important;
+  box-shadow:0 0 16px rgba(47,196,255,.2);
+}
+.phase-strip button.phase-complete{color:#6e879a!important;background:#07101b!important}
+.phase-actions{display:flex;gap:5px}
+
+.stack-bar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin:0 0 10px;
+  padding:8px 11px;
+  background:linear-gradient(90deg,#101329,#0a1725);
+  border:1px solid #3a4772;
+  border-radius:10px;
+}
+.stack-label{font-size:9px;letter-spacing:.18em;color:#8c92d5;font-weight:800;margin-right:8px}
+#stackSummary{font-size:12px;color:#e6e9ff}
+.stack-actions{display:flex;gap:5px}
+.stack-actions button{min-height:32px;padding:5px 9px;font-size:10px}
+
+.stack-overlay{
+  position:fixed;inset:0;z-index:220;
+  background:rgba(0,0,0,.72);
+  display:flex;align-items:center;justify-content:center;
+  padding:18px;backdrop-filter:blur(8px)
+}
+.stack-window{
+  width:min(760px,96vw);max-height:86vh;overflow:auto;
+  padding:16px;border-radius:16px;
+  background:linear-gradient(180deg,#111a31,#080f1c);
+  border:1px solid #465a8b;box-shadow:0 24px 70px rgba(0,0,0,.6)
+}
+.stack-window-head{display:flex;justify-content:space-between;align-items:center}
+.stack-window-head h2{margin:2px 0 0}
+.stack-window-head button{font-size:20px}
+.stack-viewer-body{display:flex;flex-direction:column;gap:9px;margin:14px 0}
+.stack-item{
+  display:grid;grid-template-columns:74px 1fr auto;
+  gap:10px;align-items:center;padding:8px;
+  border:1px solid #33486d;border-radius:10px;background:#0a1322
+}
+.stack-item img{width:68px;border-radius:7px;box-shadow:0 4px 12px rgba(0,0,0,.4)}
+.stack-item .stack-title{font-weight:800;color:#f2f5fa}
+.stack-item .stack-meta{font-size:11px;color:#91a6bb;margin-top:3px}
+.stack-item .stack-state{
+  font-size:10px;font-weight:800;padding:4px 7px;border-radius:999px;
+  border:1px solid #43516d;color:#cdd6e5
+}
+.stack-item.player{border-left:4px solid #38bdf8}
+.stack-item.cpu{border-left:4px solid #c084fc}
+.stack-item.countered{opacity:.66}
+.stack-item.resolved{opacity:.55}
+.stack-empty{text-align:center;padding:30px;color:#687c91}
+.stack-help{font-size:11px;line-height:1.55;color:#8195aa;border-top:1px solid #26384f;padding-top:10px}
+
+.cpu-card-img{
+  position:relative;width:94px;min-width:94px;
+  border-radius:8px;overflow:hidden;border:1px solid #355171;
+  background:#07101a;box-shadow:0 5px 14px rgba(0,0,0,.35)
+}
+.cpu-card-img img{width:100%;display:block}
+.cpu-card-img.tapped{transform:rotate(8deg);transform-origin:center}
+.cpu-card-img .cpu-card-name{
+  position:absolute;left:0;right:0;bottom:0;
+  padding:4px 3px;background:rgba(3,8,14,.88);font-size:9px;
+  color:#eef5ff;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+.cpu-cards.compact .cpu-card-img{width:62px;min-width:62px}
+.cpu-cards.compact .cpu-card-name{font-size:7px}
+
+@media(max-width:980px){
+  .phase-controls{width:100%;align-items:stretch}
+  .phase-strip{grid-template-columns:repeat(7,1fr)!important}
+  .phase-strip button{padding:6px 3px!important;font-size:9px!important;min-width:0}
+  .phase-actions button{flex:1}
+}
+@media(max-width:700px){
+  .phase-strip{overflow-x:auto;display:flex!important}
+  .phase-strip button{flex:0 0 76px!important}
+  .stack-bar{padding:6px 7px}
+  .stack-actions button:last-child{display:none}
+  .cpu-card-img{width:66px;min-width:66px}
+  .cpu-cards.compact .cpu-card-img{width:48px;min-width:48px}
+  .stack-item{grid-template-columns:54px 1fr}
+  .stack-item img{width:50px}
+  .stack-item .stack-state{grid-column:2}
+}
+
+
+.stack-priority-actions{
+  display:flex;gap:7px;margin:12px 0 4px
+}
+.stack-priority-actions button{flex:1;min-height:38px}
+.stack-item .stack-order{
+  font-size:9px;color:#71849a;margin-bottom:2px
+}
+.priority-banner{
+  margin:7px 0;padding:7px 9px;border-radius:8px;
+  border:1px solid #385573;background:#0a1725;
+  color:#a9c8df;font-size:11px
+}
+@media(max-width:700px){
+  .stack-priority-actions{position:sticky;top:0;z-index:3;background:#111a31;padding:6px 0}
+}
+
+
+.priority-bar{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;
+  margin:0 0 10px;padding:8px 11px;
+  border:1px solid #285b65;border-radius:10px;
+  background:linear-gradient(90deg,#0a1b20,#0c1827);
+}
+.priority-label{
+  font-size:9px;letter-spacing:.18em;color:#67d7e2;font-weight:800;margin-right:8px
+}
+#priorityOwner{color:#dffaff;margin-right:8px}
+#priorityContext{font-size:11px;color:#8daab5}
+.priority-actions{display:flex;gap:6px}
+.instant-caster-body{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:14px 0}
+.instant-choice{
+  display:grid;grid-template-columns:64px 1fr;gap:9px;align-items:center;
+  text-align:left;padding:8px;border-radius:10px;
+  border:1px solid #334b66;background:#091321;color:#fff
+}
+.instant-choice img{width:58px;border-radius:7px}
+.instant-choice b{display:block;font-size:12px}
+.instant-choice span{display:block;font-size:10px;color:#8ea4b8;margin-top:3px}
+.instant-choice:disabled{opacity:.4}
+@media(max-width:700px){
+  .priority-bar{align-items:flex-start;flex-direction:column}
+  .priority-actions{width:100%}
+  .priority-actions button{flex:1}
+  .instant-caster-body{grid-template-columns:1fr}
+}
+
+
+.engine-status{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:0 0 10px}.engine-status>div{padding:6px 8px;border:1px solid #29415b;border-radius:8px;background:#08111d;text-align:center}.engine-status span{font-size:8px;color:#72889d;letter-spacing:.14em;margin-right:6px}.engine-status strong{font-size:11px;color:#d7e9f5}.combat-panel{border-color:#4a3d67!important;background:linear-gradient(180deg,#100d1b,#090d16)!important}.combat-grid{display:grid;grid-template-columns:1fr 42px 1fr;gap:8px;align-items:center;margin:10px 0}.combat-arrow{text-align:center;font-size:24px;color:#7d6ba8}.combat-zone{min-height:92px;display:flex;gap:7px;flex-wrap:wrap;align-items:flex-end}.combat-card{width:82px;min-width:82px;padding:5px;border:1px solid #415577;border-radius:8px;background:#0a1421;text-align:center;font-size:9px;color:#edf5ff}.combat-card img{width:100%;border-radius:6px;display:block;margin-bottom:4px}.combat-card.attacker{border-color:#8e5e63;box-shadow:0 0 13px rgba(239,68,68,.12)}.combat-card.blocker{border-color:#4a7c83;box-shadow:0 0 13px rgba(34,211,238,.1)}.combat-card .pt{font-weight:900;font-size:11px;margin-top:3px}.combat-actions{display:flex;gap:6px;flex-wrap:wrap}.combat-actions button{flex:1}.trigger-stack-item{border-left:4px solid #f59e0b!important}.sba-flash{animation:sbaFlash .45s ease}@keyframes sbaFlash{0%{box-shadow:0 0 0 rgba(255,255,255,0)}50%{box-shadow:0 0 22px rgba(255,255,255,.18)}100%{box-shadow:0 0 0 rgba(255,255,255,0)}}@media(max-width:700px){.combat-grid{grid-template-columns:1fr;gap:5px}.combat-arrow{transform:rotate(90deg);font-size:18px}.combat-card{width:62px;min-width:62px}.combat-actions button{font-size:9px;padding:6px}}
+
+
+.cpu-action-banner{margin:0 0 10px;padding:8px 10px;border-radius:10px;border:1px solid #51406f;background:linear-gradient(90deg,#140e21,#0b1421);display:flex;justify-content:space-between;gap:10px;align-items:center}
+.cpu-action-banner span{font-size:9px;letter-spacing:.14em;color:#b99ee2}.cpu-action-banner strong{font-size:11px;color:#efe8ff}.cpu-action-banner.idle{opacity:.58}
+
+.ability-status-banner{margin:0 0 10px;padding:8px 10px;border-radius:10px;border:1px solid #5d4c2e;background:linear-gradient(90deg,#18130a,#0b1420);display:flex;justify-content:space-between;gap:10px;align-items:center}.ability-status-banner span{font-size:9px;letter-spacing:.14em;color:#d8b56b}.ability-status-banner strong{font-size:11px;color:#fff0c6}.ability-status-banner.idle{opacity:.58}
+
+.combat-substep-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin:8px 0 10px}
+.combat-substep{padding:6px 4px;border:1px solid #2d3d55;border-radius:7px;text-align:center;font-size:9px;color:#75879d;background:#08111b}
+.combat-substep.active{color:#fff;border-color:#8a65c5;background:#1d1432;box-shadow:0 0 12px rgba(138,101,197,.2)}
+.combat-substep.done{color:#5fae94;border-color:#315d51}
+.apnap-banner{margin:0 0 10px;padding:7px 10px;border:1px solid #40566f;border-radius:8px;background:#09131f;display:flex;justify-content:space-between;gap:10px}
+.apnap-banner span{font-size:9px;letter-spacing:.14em;color:#7f96ad}.apnap-banner strong{font-size:11px;color:#d8e8f5}
+@media(max-width:700px){.combat-substep-bar{grid-template-columns:repeat(5,minmax(58px,1fr));overflow-x:auto}}
+
+/* ===== v1.11 CURRENT LONDON MULLIGAN ===== */
+.mulligan-overlay{
+  position:fixed;inset:0;z-index:9999;
+  background:rgba(2,6,14,.94);backdrop-filter:blur(10px);
+  display:flex;align-items:center;justify-content:center;padding:18px
+}
+.mulligan-window{
+  width:min(1100px,96vw);max-height:94vh;overflow:auto;
+  border:1px solid #38516f;border-radius:16px;
+  background:linear-gradient(180deg,#0d1725,#07101a);
+  box-shadow:0 24px 80px rgba(0,0,0,.55);padding:16px
+}
+.mulligan-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.mulligan-head h2{margin:2px 0 0;font-size:22px}
+.mulligan-subtitle{font-size:11px;color:#8ca1b7;margin-top:4px}
+.mulligan-counts{display:flex;gap:8px}
+.mulligan-counts>div{
+  min-width:64px;text-align:center;padding:7px;border:1px solid #334860;
+  border-radius:10px;background:#09131f
+}
+.mulligan-counts span{display:block;font-size:8px;color:#7d91a8;letter-spacing:.12em}
+.mulligan-counts strong{display:block;font-size:20px;margin-top:2px}
+.mulligan-rule-note{
+  margin:12px 0 8px;padding:9px 11px;border-radius:9px;
+  background:#0a1b26;border:1px solid #24485a;color:#a9c6d2;font-size:11px;line-height:1.55
+}
+.mulligan-bottom-note{
+  margin:8px 0;padding:9px 11px;border-radius:9px;
+  background:#24190b;border:1px solid #6a4b1f;color:#f2d79a;font-size:12px;font-weight:700
+}
+.mulligan-hand{
+  display:grid;grid-template-columns:repeat(7,minmax(95px,1fr));
+  gap:8px;margin:12px 0
+}
+.mulligan-card{
+  position:relative;border:2px solid transparent;border-radius:10px;
+  background:#08111c;padding:4px;cursor:pointer;transition:.15s transform,.15s border-color
+}
+.mulligan-card img{width:100%;display:block;border-radius:7px}
+.mulligan-card .mulligan-card-name{
+  font-size:9px;text-align:center;padding:4px 2px 1px;color:#dfeafa
+}
+.mulligan-card.selected-bottom{
+  border-color:#e0a64d;transform:translateY(-5px);
+  box-shadow:0 0 18px rgba(224,166,77,.25)
+}
+.mulligan-card.selected-bottom:after{
+  content:"BOTTOM";position:absolute;top:7px;right:7px;
+  background:#b87518;color:white;font-size:8px;font-weight:900;
+  padding:3px 5px;border-radius:5px
+}
+.mulligan-selection-info{min-height:20px;font-size:11px;color:#99afc3;text-align:center}
+.mulligan-actions{display:flex;justify-content:center;gap:8px;margin-top:8px}
+.mulligan-actions button{min-width:140px}
+.cpu-mulligan-status{
+  margin-top:10px;text-align:center;color:#9caec0;font-size:11px;min-height:18px
+}
+@media(max-width:850px){
+  .mulligan-hand{display:flex;overflow-x:auto;gap:7px;padding-bottom:6px}
+  .mulligan-card{min-width:112px;width:112px}
+}
+@media(max-width:700px){
+  .mulligan-overlay{padding:6px;align-items:flex-end}
+  .mulligan-window{width:100%;max-height:96vh;border-radius:14px 14px 0 0;padding:11px}
+  .mulligan-head h2{font-size:18px}
+  .mulligan-card{min-width:92px;width:92px}
+  .mulligan-actions{position:sticky;bottom:0;background:#07101a;padding:8px 0 2px}
+  .mulligan-actions button{min-width:0;flex:1;font-size:11px}
+}
+
 </style>
 </head>
 <body>
@@ -835,7 +1071,7 @@ body{
 </div>
 
 <header>
-  <h1>MoMA ソリティア 1998 — Safari/PWA版 v1.3 Game UI 全カード効果実装</h1>
+  <h1>MoMA ソリティア 1998 — Safari/PWA版 v1.11 Current Mulligan 全カード効果実装</h1>
   <div class="sub">Tommi Hovi / Pro Tour Rome 1998 — Excel不要・完全オフライン対応</div>
 </header>
 <div class="wrap">
@@ -847,16 +1083,57 @@ body{
         <div class="game-subtitle">Legacy Challenge Mode</div>
       </div>
     </div>
-    <div class="phase-strip">
-      <button onclick="draw(1)">ドロー</button>
-      <button class="indigo" onclick="document.getElementById('battlefield')?.scrollIntoView({behavior:'smooth',block:'center'})">メイン</button>
-      <button class="purple" onclick="document.getElementById('cpuPanel')?.scrollIntoView({behavior:'smooth',block:'center'})">対戦状況</button>
-      <button class="green" onclick="endTurn()">ターン終了</button>
-      <button onclick="undo()">戻す</button>
+    <div class="phase-controls">
+      <div class="phase-strip" id="phaseStrip">
+        <button data-phase="untap" onclick="goToPhase('untap')">アンタップ</button>
+        <button data-phase="upkeep" onclick="goToPhase('upkeep')">アップキープ</button>
+        <button data-phase="draw" onclick="goToPhase('draw')">ドロー</button>
+        <button data-phase="main1" onclick="goToPhase('main1')">メイン1</button>
+        <button data-phase="combat" onclick="goToPhase('combat')">戦闘</button>
+        <button data-phase="main2" onclick="goToPhase('main2')">メイン2</button>
+        <button data-phase="end" onclick="goToPhase('end')">終了</button>
+      </div>
+      <div class="phase-actions">
+        <button class="cyan" onclick="nextPhase()">次のフェイズ ▶</button>
+        <button class="purple" onclick="openStackViewer()">スタック確認</button>
+        <button onclick="undo()">戻す</button>
+      </div>
     </div>
   </div>
 
   <div class="status" id="status"></div>
+
+  <div class="stack-bar">
+    <div>
+      <span class="stack-label">STACK</span>
+      <strong id="stackSummary">空</strong>
+    </div>
+    <div class="stack-actions">
+      <button class="purple" onclick="openStackViewer()">スタックを開く</button>
+      <button onclick="clearResolvedStack()">解決済み履歴を消去</button>
+    </div>
+  </div>
+  <div id="priorityBar" class="priority-bar">
+    <div>
+      <span class="priority-label">PRIORITY</span>
+      <strong id="priorityOwner">PLAYER</strong>
+      <span id="priorityContext">あなたのメインフェイズ</span>
+    </div>
+    <div class="priority-actions">
+      <button class="cyan" onclick="openInstantCaster()">インスタントを唱える</button>
+      <button class="green" onclick="passPriority()">優先権をパス</button>
+    </div><div id="cpuActionBanner" class="cpu-action-banner idle"><span>CPU ACTION</span><strong id="cpuActionText">待機中</strong></div>
+  <div id="abilityStatusBanner" class="ability-status-banner idle">
+    <span>ACTIVATED / DELAYED</span><strong id="abilityStatusText">待機中</strong>
+  </div>
+
+  </div>
+  <div class="engine-status">
+    <div><span>TRIGGERS</span><strong id="triggerCount">0</strong></div>
+    <div><span>SBA</span><strong id="sbaStatus">OK</strong></div>
+    <div><span>COMBAT</span><strong id="combatMiniStatus">IDLE</strong></div>
+  </div><div id="apnapBanner" class="apnap-banner"><span>TRIGGER ORDER</span><strong id="apnapText">APNAP待機</strong></div>
+
 
   <div class="arena">
     <section class="opponent-area section">
@@ -904,6 +1181,23 @@ body{
             <div id="cpuGraveyard" class="cpu-cards compact"></div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <section class="section combat-panel">
+      <div class="section-head">
+        <div><div class="side-label">COMBAT</div><h2>戦闘</h2></div>
+        <div id="combatStatusBadge" class="mode-badge">戦闘待機</div>
+      </div>
+      <div class="combat-substep-bar" id="combatSubstepBar"><div class="combat-substep" data-cstep="begin">戦闘開始</div><div class="combat-substep" data-cstep="attackers">攻撃指定</div><div class="combat-substep" data-cstep="blockers">ブロック指定</div><div class="combat-substep" data-cstep="damage">ダメージ</div><div class="combat-substep" data-cstep="end">戦闘終了</div></div><div class="combat-grid">
+        <div class="zone-board"><div class="zone-title">ATTACKERS</div><div id="attackersZone" class="combat-zone"></div></div>
+        <div class="combat-arrow">➜</div>
+        <div class="zone-board"><div class="zone-title">BLOCKERS</div><div id="blockersZone" class="combat-zone"></div></div>
+      </div>
+      <div class="combat-actions">
+        <button class="indigo" onclick="declareAttackersManual()">攻撃確認</button>
+        <button class="purple" onclick="declareBlockersManual()">ブロック指定</button>
+        <button class="green" onclick="resolveCombatDamage()">戦闘ダメージ解決</button>
       </div>
     </section>
 
@@ -1016,7 +1310,7 @@ body{
   </div>
 
   <div class="footer">
-    v1.3 Game UI: UB Tempo CPU対戦テストモードを追加。
+    v1.11 Current Mulligan: UB Tempo CPU対戦テストモードを追加。
     スマホ: 手札常時下部表示 / 1タップ選択 / ダブルタップ即実行 / 長押し詳細。<br>Mox Diamond / Scroll Rack / Abeyance / Intuition / Power Sink / Mana Vault /
     Mind Over Matter / Time Spiral / Windfall / Stroke of Genius を含む。
     </div>
@@ -1073,7 +1367,7 @@ function cpuDraw(n=1){
 
 function cpuOpening(){
   state.cpu=initCPU();
-  for(let i=0;i<7;i++) cpuDraw();
+  openingDrawCPU7();
 }
 
 function cpuManaCount(){
@@ -1174,37 +1468,803 @@ function cpuCanForce(){
 
 function cpuUseForce(spellName){
   if(!cpuCanForce()) return false;
+  const target=(state.stack||[]).find(x=>x.controller==="PLAYER"&&x.name===spellName&&x.status==="pending");
+  if(!target) return false;
+
   const fi=state.cpu.hand.indexOf("Force of Will");
   state.cpu.hand.splice(fi,1);
   let blue=state.cpu.hand.findIndex(n=>cpuBlueCards.has(n));
   const pitch=state.cpu.hand.splice(blue,1)[0];
+  // Pitch card is tracked in graveyard in this simplified engine.
   state.cpu.graveyard.push("Force of Will",pitch);
   state.cpu.life-=1;
-  log(`CPU: 《Force of Will》(${pitch}を追放扱い) → ${cardDisplayName(spellName)} を打ち消す`);
-  return true;
+
+  const force=pushStack("CPU","Force of Will","instant",`${spellName}を対象`,{targetId:target.id});
+  log(`CPU: 《Force of Will》(${pitch}をピッチ) → ${cardDisplayName(spellName)} を対象`);
+
+  offerPowerSinkResponse(force);
+  resolveStackFully();
+
+  const targetAfter=getStackItem(target.id);
+  const countered=targetAfter && targetAfter.status==="countered";
+  closeStackViewer();
+  return countered;
 }
 
 function cpuUseDaze(spellName){
   if(!state.cpu || !state.cpu.hand.includes("Daze")) return false;
+  const target=(state.stack||[]).find(x=>x.controller==="PLAYER"&&x.name===spellName&&x.status==="pending");
+  if(!target) return false;
+
   const island=state.cpu.battlefield.findIndex(x=>["Underground Sea","Island"].includes(x.name));
   if(island<0) return false;
-  // Ask whether player can/wants to pay 1. This uses current player's mana pool.
-  if(colors.reduce((s,c)=>s+state.mana[c],0)>=1){
-    if(confirm(`CPUが《Daze》を唱えました。\n${cardDisplayName(spellName)} を守るため追加で1マナ支払いますか？`)){
-      if(payGeneric(1)){
-        cpuMoveHandToGrave("Daze");
-        const land=state.cpu.battlefield.splice(island,1)[0];
-        state.cpu.hand.push(land.name);
-        log(`CPU: 《Daze》→ プレイヤーが1マナ支払い解決`);
-        return false;
-      }
-    }
-  }
+
   cpuMoveHandToGrave("Daze");
   const land=state.cpu.battlefield.splice(island,1)[0];
   state.cpu.hand.push(land.name);
-  log(`CPU: 《Daze》→ ${cardDisplayName(spellName)} を打ち消す`);
+
+  const daze=pushStack("CPU","Daze","instant",`${spellName}を対象`,{targetId:target.id});
+  log(`CPU: 《Daze》→ ${cardDisplayName(spellName)} を対象`);
+
+  offerPowerSinkResponse(daze);
+  resolveStackFully();
+
+  const targetAfter=getStackItem(target.id);
+  const countered=targetAfter && targetAfter.status==="countered";
+  closeStackViewer();
+  return countered;
+}
+
+
+const PHASES=[
+  {id:"untap",label:"アンタップ"},
+  {id:"upkeep",label:"アップキープ"},
+  {id:"draw",label:"ドロー"},
+  {id:"main1",label:"メイン1"},
+  {id:"combat",label:"戦闘"},
+  {id:"main2",label:"メイン2"},
+  {id:"end",label:"終了"}
+];
+
+function cpuCardImage(name){
+  const s=name.toLowerCase().replaceAll(",","").replaceAll("'","").replaceAll(" ","-").replace(/[^a-z0-9\-]/g,"");
+  return `cpu-cards/${s}.jpg`;
+}
+function playerCardImage(name){ return cardImageUrl(name); }
+
+function pushStack(controller,name,kind="spell",note="",extra={}){
+  if(!state.stack) state.stack=[];
+  state.stackSeq=(state.stackSeq||0)+1;
+  const item={
+    id:`stk-${state.stackSeq}-${Date.now()}`,
+    seq:state.stackSeq,
+    controller,name,kind,note,status:"pending",
+    targetId:extra.targetId||null,
+    x:extra.x??null,
+    result:extra.result||null
+  };
+  // index 0 is always the top of the stack.
+  state.stack.unshift(item);
+  state.priority=controller==="PLAYER"?"CPU":"PLAYER";
+  renderStackUI();
+  renderPriorityUI();
+  renderCombatUI();updateCPUActionBanner();updateAbilityStatus();setCombatStep(state.combatStep||"idle");updateAPNAPBanner();
+  const tc=document.getElementById("triggerCount");if(tc)tc.textContent=getPendingStack().filter(x=>x.kind==="triggered ability").length;
+  const ss=document.getElementById("sbaStatus");if(ss)ss.textContent=state.sbaLast||"OK";
+  return item;
+}
+function markStack(name,controller,status,note=""){
+  if(!state.stack) return;
+  const it=state.stack.find(x=>x.name===name&&x.controller===controller&&x.status==="pending");
+  if(it){it.status=status;if(note)it.note=note;}
+  renderStackUI();
+  renderPriorityUI();
+}
+function archiveStack(){
+  if(!state.stack) state.stack=[];
+  if(!state.stackHistory) state.stackHistory=[];
+  const done=state.stack.filter(x=>x.status!=="pending");
+  if(done.length) state.stackHistory.unshift(...done.map(x=>({...x,archived:true})));
+  state.stack=state.stack.filter(x=>x.status==="pending");
+  state.stackHistory=state.stackHistory.slice(0,16);
+  renderStackUI();
+}
+function clearResolvedStack(){ state.stackHistory=[]; renderStackUI(); }
+function openStackViewer(){ renderStackViewer();document.getElementById("stackOverlay").style.display="flex"; }
+function closeStackViewer(){ document.getElementById("stackOverlay").style.display="none"; }
+
+function renderStackUI(){
+  const sum=document.getElementById("stackSummary");
+  if(sum){
+    const pending=(state.stack||[]).filter(x=>x.status==="pending");
+    sum.textContent=pending.length?`${pending.length}件 / TOP: ${pending[0].name} / 優先権: ${state.priority||"PLAYER"}`:"空";
+  }
+  renderStackViewer();
+}
+function renderStackViewer(){
+  const body=document.getElementById("stackViewerBody");
+  if(!body) return;
+  const items=[...(state.stack||[]),...(state.stackHistory||[])];
+  if(!items.length){body.innerHTML='<div class="stack-empty">現在スタックは空です。</div>';return;}
+  const pending=(state.stack||[]).filter(x=>x.status==="pending");
+  const banner=pending.length?`<div class="priority-banner">優先権: ${state.priority||"PLAYER"} ／ 解決順: 上 → 下</div>`:"";
+  body.innerHTML=banner+items.map((x,i)=>{
+    const src=x.controller==="CPU"?cpuCardImage(x.name):playerCardImage(x.name);
+    const cls=(x.kind==="triggered ability"?"trigger-stack-item ":"")+(x.controller==="CPU"?"cpu":"player");
+    const st=x.status==="pending"?(x.kind==="triggered ability"?"TRIGGER":x.kind==="activated ability"?"ABILITY":x.kind==="delayed triggered ability"?"DELAYED":"STACK"):x.status==="countered"?"COUNTERED":"RESOLVED";
+    return `<div class="stack-item ${cls} ${x.status}">
+      <img src="${src}" alt="${x.name}" onerror="this.src='card-back.jpg'">
+      <div><div class="stack-order">${x.status==="pending"?(i===0?"TOP / 次に解決":"STACK"):"HISTORY"}</div>
+      <div class="stack-title">${x.name}</div>
+      <div class="stack-meta">${x.controller} / ${x.kind}${x.note?` — ${x.note}`:""}</div></div>
+      <div class="stack-state">${st}</div>
+    </div>`;
+  }).join("");
+}
+
+
+
+
+const CPU_CREATURE_BASE_STATS={"Orcish Bowmasters":{p:1,t:1},"Moonshadow":{p:3,t:3},"Nethergoyf":{p:1,t:2},"Orc Army":{p:0,t:0}};
+function cpuGraveyardTypeCount(){if(!state.cpu)return 0;const types=new Set();for(const n of state.cpu.graveyard){if(cpuLandNames.has(n))types.add("land");else if(cpuCreatureNames.has(n)||n==="Orc Army")types.add("creature");else if(n==="Mishra's Bauble")types.add("artifact");else if(n==="Kaito, Bane of Nightmares")types.add("planeswalker");else if(["Thoughtseize","Ponder"].includes(n))types.add("sorcery");else if(["Brainstorm","Daze","Fatal Push","Flow State","Force of Will","Snuff Out"].includes(n))types.add("instant");}return types.size;}
+function cpuCreatureStats(name){if(name==="Nethergoyf"){const x=Math.max(1,cpuGraveyardTypeCount());return {p:x,t:x+1};}if(name==="Orc Army"){const x=state.cpu?.bowmasterTokens||0;return {p:x,t:x};}return CPU_CREATURE_BASE_STATS[name]||{p:0,t:1};}
+function resetCombatDamageMarks(){if(state.cpu)state.cpu.battlefield.forEach(p=>p.damageMarked=0);state.battlefield.forEach(p=>p.damageMarked=0);}
+function isCPUCreaturePermanent(p){return p&&(cpuCreatureNames.has(p.name)||p.name==="Orc Army");}
+function isPlayerCreaturePermanent(p){return p&&p.isCreature===true;}
+function startCombatStep(){state.combat={active:true,attackers:[],blockers:{},damageResolved:false};renderCombatUI();}
+function cpuChooseAttackers(){if(!state.cpu)return[];const a=[];state.cpu.battlefield.forEach((p,i)=>{if(isCPUCreaturePermanent(p)&&!p.tapped&&!p.summoning&&cpuCreatureStats(p.name).p>0){a.push(i);p.tapped=true;}});state.combat.attackers=a;log(`CPU: 攻撃クリーチャー ${a.length}体`);renderCombatUI();return a;}
+function playerAvailableBlockers(){return state.battlefield.map((p,i)=>({p,i})).filter(x=>isPlayerCreaturePermanent(x.p)&&!x.p.tapped);}
+function autoDeclareBlocks(){const bs=playerAvailableBlockers();state.combat.blockers={};if(!bs.length)return;state.combat.attackers.forEach((ai,k)=>{if(bs[k])state.combat.blockers[ai]=bs[k].i;});}
+function declareAttackersManual(){if(!state.combat.active)return alert("現在は戦闘中ではありません。");renderCombatUI();}
+function declareBlockersManual(){if(!state.combat.active)return alert("現在は戦闘中ではありません。");const bs=playerAvailableBlockers();if(!bs.length)return alert("現在のMoMAデッキにはブロック可能なクリーチャーがいません。");const rows=state.combat.attackers.map((ai,i)=>`${i+1}: ${state.cpu.battlefield[ai]?.name||"?"}`).join("\n");for(const b of bs){let p=parseInt(prompt(`${b.p.name}でどれをブロック？\n0: しない\n${rows}`,"0"),10)-1;if(p>=0&&p<state.combat.attackers.length)state.combat.blockers[state.combat.attackers[p]]=b.i;}renderCombatUI();}
+function resolveCombatDamage(){if(!state.combat.active||state.combat.damageResolved)return;let dmg=0;for(const ai of state.combat.attackers){const atk=state.cpu?.battlefield[ai];if(!atk||!isCPUCreaturePermanent(atk))continue;const ast=cpuCreatureStats(atk.name);const bi=state.combat.blockers[ai];if(bi===undefined){dmg+=ast.p;continue;}const blk=state.battlefield[bi];if(!blk){dmg+=ast.p;continue;}const bp=blk.power||0,bt=blk.toughness||1;blk.damageMarked=(blk.damageMarked||0)+ast.p;atk.damageMarked=(atk.damageMarked||0)+bp;log(`戦闘: ${atk.name} ${ast.p}/${ast.t} ⇄ ${blk.name} ${bp}/${bt}`);}if(dmg>0){state.life-=dmg;log(`戦闘ダメージ: PLAYERに${dmg}点（LIFE ${state.life}）`);}state.combat.damageResolved=true;checkStateBasedActions("戦闘ダメージ後");renderCombatUI();render();}
+function endCombatStep(){resetCombatDamageMarks();state.combat={active:false,attackers:[],blockers:{},damageResolved:false};renderCombatUI();}
+function renderCombatUI(){const az=document.getElementById("attackersZone"),bz=document.getElementById("blockersZone"),badge=document.getElementById("combatStatusBadge"),mini=document.getElementById("combatMiniStatus");if(!az||!bz)return;if(!state.combat?.active){az.innerHTML='<span style="color:#65788b">—</span>';bz.innerHTML='<span style="color:#65788b">—</span>';if(badge)badge.textContent="戦闘待機";if(mini)mini.textContent="IDLE";return;}if(badge)badge.textContent=state.combat.damageResolved?"ダメージ解決済み":"戦闘中";if(mini)mini.textContent=state.combat.damageResolved?"DONE":"ACTIVE";az.innerHTML=state.combat.attackers.map(ai=>{const p=state.cpu?.battlefield[ai];if(!p)return"";const st=cpuCreatureStats(p.name);return `<div class="combat-card attacker"><img src="${cpuCardImage(p.name)}"><div>${p.name}</div><div class="pt">${st.p}/${st.t}</div></div>`;}).join("")||'<span style="color:#65788b">攻撃なし</span>';const blocks=Object.entries(state.combat.blockers||{});bz.innerHTML=blocks.map(([ai,bi])=>{const p=state.battlefield[Number(bi)];if(!p)return"";return `<div class="combat-card blocker"><img src="${playerCardImage(p.name)}"><div>${p.name}</div><div class="pt">${p.power||0}/${p.toughness||1}</div></div>`;}).join("")||'<span style="color:#65788b">ブロックなし</span>';}
+function checkStateBasedActions(reason=""){let changed=false;if(state.cpu){for(let i=state.cpu.battlefield.length-1;i>=0;i--){const p=state.cpu.battlefield[i];if(!isCPUCreaturePermanent(p))continue;const st=cpuCreatureStats(p.name);if(st.t<=0||(p.damageMarked||0)>=st.t){state.cpu.battlefield.splice(i,1);if(p.name!=="Orc Army")state.cpu.graveyard.push(p.name);log(`SBA: ${p.name} が墓地へ`);changed=true;}}}for(let i=state.battlefield.length-1;i>=0;i--){const p=state.battlefield[i];if(!isPlayerCreaturePermanent(p))continue;const t=p.toughness||1;if(t<=0||(p.damageMarked||0)>=t){const dead=state.battlefield.splice(i,1)[0];state.graveyard.push(dead.name);log(`SBA: ${dead.name} が墓地へ`);changed=true;}}if(state.life<=0&&!state.challengeOver){state.challengeOver=true;if(state.cpu)state.cpu.result="CPU WIN";showChallengeResult(false,"ライフが0以下になりました。");changed=true;}if(state.cpu&&state.cpu.life<=0&&!state.challengeOver){state.challengeOver=true;state.cpu.result="PLAYER WIN";showChallengeResult(true,"Legacy UB Tempoに勝利しました！");changed=true;}state.sbaLast=changed?(reason||"処理あり"):"OK";const s=document.getElementById("sbaStatus");if(s){s.textContent=state.sbaLast;s.parentElement.classList.add("sba-flash");setTimeout(()=>s.parentElement.classList.remove("sba-flash"),450);}return changed;}
+function queueTriggeredAbility(source,controller,ability,note="",extra={}){const tr=pushStack(controller,ability,"triggered ability",note,{...extra,source});tr.source=source;if(!state.triggerQueue)state.triggerQueue=[];state.triggerQueue.push(tr.id);log(`誘発: ${source} — ${ability}`);render();return tr;}
+function bowmastersOnOpponentDraw(count,firstDrawStepCard=false){if(!state.cpu||count<=0)return;const bows=state.cpu.battlefield.filter(p=>p.name==="Orcish Bowmasters").length;if(!bows)return;let triggers=count;if(firstDrawStepCard)triggers=Math.max(0,count-1);for(let b=0;b<bows;b++)for(let i=0;i<triggers;i++)queueTriggeredAbilityAPNAP("Orcish Bowmasters","CPU","Bowmasters Trigger","PLAYERへ1点、その後amass Orcs 1");}
+function resolveTriggeredAbility(item){if(item.name==="Bowmasters Trigger"){state.life-=1;state.cpu.bowmasterTokens=(state.cpu.bowmasterTokens||0)+1;let army=state.cpu.battlefield.find(p=>p.name==="Orc Army");if(!army){army={name:"Orc Army",tapped:false,summoning:false,damageMarked:0};state.cpu.battlefield.push(army);}finishStackItem(item,"resolved","1点 + Orc Army +1/+1");log(`《Orcish Bowmasters》誘発解決: 1点、Orc Army ${state.cpu.bowmasterTokens}/${state.cpu.bowmasterTokens}`);checkStateBasedActions("Bowmasters誘発後");return;}finishStackItem(item,"resolved");}
+
+
+
+
+const COMBAT_STEPS=["begin","attackers","blockers","damage","end"];
+function setCombatStep(id){state.combatStep=id;const idx=COMBAT_STEPS.indexOf(id);document.querySelectorAll("[data-cstep]").forEach((el,i)=>{el.classList.toggle("active",i===idx);el.classList.toggle("done",idx>=0&&i<idx)});const mini=document.getElementById("combatMiniStatus");if(mini)mini.textContent=(id||"idle").toUpperCase()}
+function giveCombatPriority(context){resetPriority("PLAYER",context);log(`優先権 → PLAYER（${context}）`);render()}
+function startDetailedCombat(){startCombatStep();setCombatStep("begin");giveCombatPriority("CPU 戦闘開始ステップ")}
+function advanceDetailedCombat(){const step=state.combatStep||"idle";if(step==="begin"){setCombatStep("attackers");cpuChooseAttackers();giveCombatPriority("CPU 攻撃クリーチャー指定後");return}if(step==="attackers"){setCombatStep("blockers");autoDeclareBlocks();renderCombatUI();giveCombatPriority("ブロック指定後");return}if(step==="blockers"){setCombatStep("damage");giveCombatPriority("戦闘ダメージ前");return}if(step==="damage"){resolveCombatDamage();if(state.challengeOver)return;setCombatStep("end");giveCombatPriority("戦闘終了ステップ");return}if(step==="end"){endCombatStep();setCombatStep("idle");advanceCPUPhase()}}
+function queueTriggerBatch(triggers){if(Array.isArray(triggers)&&triggers.length){if(!state.pendingTriggerBatch)state.pendingTriggerBatch=[];state.pendingTriggerBatch.push(...triggers)}}
+function flushTriggerBatchAPNAP(){if(!state.pendingTriggerBatch?.length)return;const active=state.cpuTurnActive?"CPU":"PLAYER",nonactive=active==="CPU"?"PLAYER":"CPU";const a=state.pendingTriggerBatch.filter(t=>t.controller===active),n=state.pendingTriggerBatch.filter(t=>t.controller===nonactive),ordered=[...a,...n];state.pendingTriggerBatch=[];for(const t of ordered){const item=pushStack(t.controller,t.name,t.kind||"triggered ability",t.note||"",t.extra||{});if(t.source)item.source=t.source}const tx=document.getElementById("apnapText");if(tx)tx.textContent=`Active: ${active} → Nonactive: ${nonactive} / ${ordered.length}件`;log(`APNAP: ${active}側誘発 → ${nonactive}側誘発 の順にスタックへ`)}
+function queueTriggeredAbilityAPNAP(source,controller,ability,note="",extra={}){queueTriggerBatch([{source,controller,name:ability,kind:"triggered ability",note,extra}])}
+function queueDelayedTriggerAPNAP(source,controller,ability,note="",extra={}){queueTriggerBatch([{source,controller,name:ability,kind:"delayed triggered ability",note,extra}])}
+function fireDelayedTriggersAPNAP(at){if(!state.delayedTriggers?.length)return;const fire=state.delayedTriggers.filter(t=>t.fireAt===at);state.delayedTriggers=state.delayedTriggers.filter(t=>t.fireAt!==at);for(const t of fire)queueDelayedTriggerAPNAP(t.source,t.controller,t.name,"次のアップキープ開始時に1枚引く");flushTriggerBatchAPNAP()}
+function cpuFindKaito(){return state.cpu?state.cpu.battlefield.findIndex(p=>p.name==="Kaito, Bane of Nightmares"):-1}
+function cpuCanUseKaito(){return cpuFindKaito()>=0&&state.kaitoUsedTurn!==(state.cpu?.turn||0)}
+function cpuActivateKaito(){if(!cpuCanUseKaito()||state.abeyanceActive)return false;state.kaitoUsedTurn=state.cpu.turn;pushActivatedAbility("CPU","Kaito Ability","Kaito, Bane of Nightmares","簡略化: 1枚引き、相手の手札を1枚捨てさせる");log("CPU: 《Kaito, Bane of Nightmares》の能力を起動");resetPriority("PLAYER","CPUが《Kaito》の能力を起動");render();return true}
+function resolveKaitoAbility(item){cpuDraw(1);const t=chooseThoughtseizeTarget();if(t){const i=state.hand.indexOf(t);if(i>=0){state.hand.splice(i,1);state.graveyard.push(t)}item.note=`1枚ドロー / ${cardDisplayName(t)}を捨てさせた`;log(`《Kaito》能力解決: CPU 1ドロー / ${cardDisplayName(t)} を捨てさせた`)}else{item.note="1枚ドロー / 捨てさせるカードなし";log("《Kaito》能力解決: CPU 1ドロー")}finishStackItem(item,"resolved")}
+function updateAPNAPBanner(){const t=document.getElementById("apnapText");if(!t)return;if(state.pendingTriggerBatch?.length)t.textContent=`未配置誘発 ${state.pendingTriggerBatch.length}件`;else if(!getPendingStack().some(x=>x.kind==="triggered ability"||x.kind==="delayed triggered ability"))t.textContent="APNAP待機"}
+
+const CPU_ACTIVATED_ABILITIES=new Set(["Wasteland Ability","Mishra's Bauble Ability"]);
+const CPU_DELAYED_TRIGGERS=new Set(["Mishra's Bauble Delayed Draw"]);
+function pushActivatedAbility(controller,name,source,note="",extra={}){const item=pushStack(controller,name,"activated ability",note,{...extra,source});item.source=source;return item}
+function pushDelayedTrigger(controller,name,source,note="",extra={}){const item=pushStack(controller,name,"delayed triggered ability",note,{...extra,source});item.source=source;return item}
+function cpuFindBattlefield(name){return state.cpu?state.cpu.battlefield.findIndex(p=>p.name===name):-1}
+function chooseWastelandTarget(){for(const n of ["Tolarian Academy","Ancient Tomb","City of Brass","Tundra","Volcanic Island"]){const i=state.battlefield.findIndex(p=>p.name===n);if(i>=0)return{index:i,name:n}}return null}
+function cpuActivateWasteland(){if(!state.cpu||state.abeyanceActive)return false;const wi=cpuFindBattlefield("Wasteland");if(wi<0)return false;const target=chooseWastelandTarget();if(!target)return false;const w=state.cpu.battlefield.splice(wi,1)[0];state.cpu.graveyard.push(w.name);pushActivatedAbility("CPU","Wasteland Ability","Wasteland",`${cardDisplayName(target.name)}を対象`,{targetName:target.name});log(`CPU: 《Wasteland》を生け贄 → ${cardDisplayName(target.name)} を対象`);resetPriority("PLAYER","CPUが《Wasteland》の能力を起動");render();return true}
+function resolveWastelandAbility(item){const idx=state.battlefield.findIndex(p=>p.name===item.targetName);if(idx<0){finishStackItem(item,"resolved","対象不在");log("《Wasteland》能力: 対象不在");return}const d=state.battlefield.splice(idx,1)[0];state.graveyard.push(d.name);finishStackItem(item,"resolved",`${cardDisplayName(d.name)}を破壊`);log(`《Wasteland》能力解決: ${cardDisplayName(d.name)} を破壊`)}
+function cpuActivateBauble(){if(!state.cpu||state.abeyanceActive)return false;const bi=cpuFindBattlefield("Mishra's Bauble");if(bi<0)return false;const b=state.cpu.battlefield.splice(bi,1)[0];state.cpu.graveyard.push(b.name);pushActivatedAbility("CPU","Mishra's Bauble Ability","Mishra's Bauble","プレイヤーのライブラリーの一番上を見る");log("CPU: 《Mishra's Bauble》を生け贄にして能力を起動");resetPriority("PLAYER","CPUが《Mishra's Bauble》の能力を起動");render();return true}
+function resolveBaubleAbility(item){const top=state.library[0]||null;finishStackItem(item,"resolved",top?`PLAYER top: ${cardDisplayName(top)}`:"PLAYER library empty");log(`《Mishra's Bauble》能力解決: PLAYERのトップは ${top?cardDisplayName(top):"なし"}`);state.delayedTriggers.push({controller:"CPU",name:"Mishra's Bauble Delayed Draw",source:"Mishra's Bauble",fireAt:"nextUpkeep",createdTurn:state.cpu?.turn||0})}
+function fireDelayedTriggers(at){if(!state.delayedTriggers?.length)return;const fire=state.delayedTriggers.filter(t=>t.fireAt===at);state.delayedTriggers=state.delayedTriggers.filter(t=>t.fireAt!==at);for(const t of fire){pushDelayedTrigger(t.controller,t.name,t.source,"次のアップキープ開始時に1枚引く");log(`遅延誘発: ${t.name}`)}}
+function resolveDelayedTrigger(item){if(item.name==="Mishra's Bauble Delayed Draw"){cpuDraw(1);finishStackItem(item,"resolved","CPUが1枚ドロー");log("《Mishra's Bauble》遅延誘発解決: CPUが1枚ドロー");return}finishStackItem(item,"resolved")}
+function resolveActivatedAbility(item){if(item.name==="Wasteland Ability")return resolveWastelandAbility(item);if(item.name==="Mishra's Bauble Ability")return resolveBaubleAbility(item);finishStackItem(item,"resolved")}
+function updateAbilityStatus(){const e=document.getElementById("abilityStatusBanner"),t=document.getElementById("abilityStatusText");if(!e||!t)return;const p=getPendingStack().find(x=>x.kind==="activated ability"||x.kind==="delayed triggered ability");if(p){e.classList.remove("idle");t.textContent=`${p.name} — スタック上`}else if(state.delayedTriggers?.length){e.classList.remove("idle");t.textContent=`遅延誘発 ${state.delayedTriggers.length}件`}else{e.classList.add("idle");t.textContent="待機中"}}
+
+const CPU_STACK_SPELLS=new Set(["Thoughtseize","Brainstorm","Ponder","Mishra's Bauble","Moonshadow","Nethergoyf","Orcish Bowmasters","Kaito, Bane of Nightmares","Fatal Push","Flow State","Snuff Out"]);
+function cpuFindHand(n){return state.cpu?state.cpu.hand.indexOf(n):-1}
+function cpuRemoveFromHand(n){const i=cpuFindHand(n);if(i<0)return false;state.cpu.hand.splice(i,1);return true}
+function cpuSpellCanCast(n){
+ if(!state.cpu||!state.cpu.hand.includes(n))return false;
+ if(state.abeyanceActive&&!cpuCreatureNames.has(n)&&n!=="Kaito, Bane of Nightmares")return false;
+ const c={"Thoughtseize":1,"Brainstorm":1,"Ponder":1,"Mishra's Bauble":0,"Moonshadow":2,"Nethergoyf":2,"Orcish Bowmasters":2,"Kaito, Bane of Nightmares":3,"Fatal Push":1,"Flow State":1,"Snuff Out":0}[n]??0;
+ return cpuAvailableGenericMana()>=c;
+}
+function cpuPaySpellCost(n){
+ const c={"Thoughtseize":1,"Brainstorm":1,"Ponder":1,"Mishra's Bauble":0,"Moonshadow":2,"Nethergoyf":2,"Orcish Bowmasters":2,"Kaito, Bane of Nightmares":3,"Fatal Push":1,"Flow State":1,"Snuff Out":0}[n]??0;
+ if(n==="Snuff Out"&&state.cpu.life>4){state.cpu.life-=4;return true}
+ return cpuPayGenericForStack(c);
+}
+function cpuCastSpellToStack(n,note=""){
+ if(!cpuSpellCanCast(n)||!cpuPaySpellCost(n)||!cpuRemoveFromHand(n))return null;
+ const it=pushStack("CPU",n,"spell",note);it.fromHand=true;state.cpuWaitingForStack=true;
+ log(`CPU: 《${n}》を唱えた`);resetPriority("PLAYER",`CPUが《${n}》を唱えた`);render();return it;
+}
+function chooseThoughtseizeTarget(){
+ const p=["Mind Over Matter","Time Spiral","Windfall","Intuition","Stroke of Genius","Mana Vault","Voltaic Key","Scroll Rack","Abeyance","Power Sink","Lotus Petal","Mox Diamond"];
+ for(const n of p)if(state.hand.includes(n))return n;
+ return state.hand.find(n=>!lands.has(n))||null;
+}
+function resolveCPUStackSpell(it){
+ const n=it.name;
+ if(n==="Thoughtseize"){
+   const t=chooseThoughtseizeTarget();state.cpu.life-=2;
+   if(t){const i=state.hand.indexOf(t);if(i>=0){state.hand.splice(i,1);state.graveyard.push(t)}log(`《Thoughtseize》解決: ${cardDisplayName(t)} を捨てさせた`)}
+   state.cpu.graveyard.push(n);finishStackItem(it,"resolved");checkStateBasedActions("Thoughtseize解決後");return;
+ }
+ if(n==="Brainstorm"){
+   cpuDraw(Math.min(3,state.cpu.library.length));
+   const v={"Force of Will":100,"Daze":85,"Thoughtseize":75,"Orcish Bowmasters":70,"Nethergoyf":65,"Moonshadow":60,"Wasteland":55};
+   for(let k=0;k<2&&state.cpu.hand.length;k++){let w=0;for(let i=1;i<state.cpu.hand.length;i++)if((v[state.cpu.hand[i]]||20)<(v[state.cpu.hand[w]]||20))w=i;state.cpu.library.unshift(state.cpu.hand.splice(w,1)[0])}
+   state.cpu.graveyard.push(n);finishStackItem(it,"resolved","3 draw / 2 back");log("《Brainstorm》解決");return;
+ }
+ if(n==="Ponder"){
+   const top=state.cpu.library.splice(0,Math.min(3,state.cpu.library.length)),v={"Force of Will":100,"Daze":85,"Thoughtseize":78,"Orcish Bowmasters":74,"Nethergoyf":68,"Moonshadow":62,"Wasteland":58,"Underground Sea":50};
+   top.sort((a,b)=>(v[b]||20)-(v[a]||20));if(top.length){state.cpu.hand.push(top.shift());state.cpu.library.unshift(...top)}
+   state.cpu.graveyard.push(n);finishStackItem(it,"resolved");log("《Ponder》解決");return;
+ }
+ if(n==="Mishra's Bauble"){state.cpu.battlefield.push({name:n,tapped:false,summoning:false,damageMarked:0});finishStackItem(it,"resolved");return}
+ if(cpuCreatureNames.has(n)){
+   state.cpu.battlefield.push({name:n,tapped:false,summoning:true,damageMarked:0});finishStackItem(it,"resolved");
+   if(n==="Orcish Bowmasters")queueTriggeredAbilityAPNAP("Orcish Bowmasters","CPU","Bowmasters Trigger","ETB — PLAYERへ1点、その後amass Orcs 1");flushTriggerBatchAPNAP();
+   log(`《${n}》解決: 戦場へ`);return;
+ }
+ if(n==="Kaito, Bane of Nightmares"){state.cpu.battlefield.push({name:n,tapped:false,summoning:false,damageMarked:0});finishStackItem(it,"resolved");log("《Kaito》解決: 戦場へ");return}
+ if(n==="Fatal Push"||n==="Snuff Out"){state.cpu.graveyard.push(n);finishStackItem(it,"resolved","MoMA側に対象なし");log(`《${n}》解決: 対象なし`);return}
+ if(n==="Flow State"){cpuDraw(1);state.cpu.graveyard.push(n);finishStackItem(it,"resolved","簡略化: 1枚ドロー");return}
+ state.cpu.graveyard.push(n);finishStackItem(it,"resolved");
+}
+function cpuQueueMainPhaseActions(){
+ if(!state.cpu)return[];
+ const q=[];if(state.cpu.hand.includes("Thoughtseize"))q.push("Thoughtseize");
+ if(state.cpu.hand.includes("Orcish Bowmasters"))q.push("Orcish Bowmasters");else if(state.cpu.hand.includes("Nethergoyf"))q.push("Nethergoyf");else if(state.cpu.hand.includes("Moonshadow"))q.push("Moonshadow");
+ if(state.cpu.hand.includes("Ponder"))q.push("Ponder");else if(state.cpu.hand.includes("Brainstorm"))q.push("Brainstorm");
+ if(state.cpu.hand.includes("Mishra's Bauble"))q.push("Mishra's Bauble");if(state.cpu.hand.includes("Kaito, Bane of Nightmares"))q.push("Kaito, Bane of Nightmares");return q;
+}
+function cpuRunNextQueuedAction(){
+ if(!state.cpuTurnActive||state.cpuPhase!=="main1"||getPendingStack().length)return false;
+ while(state.cpuActionQueue?.length){const n=state.cpuActionQueue.shift();if(cpuSpellCanCast(n)&&cpuCastSpellToStack(n))return true}
+ state.cpuWaitingForStack=false;return false;
+}
+function updateCPUActionBanner(){
+ const e=document.getElementById("cpuActionBanner"),t=document.getElementById("cpuActionText");if(!e||!t)return;
+ const p=getPendingStack().find(x=>x.controller==="CPU"&&x.kind==="spell");
+ if(p){e.classList.remove("idle");t.textContent=`${p.name} — スタック上`}else if(state.cpuTurnActive&&state.cpuActionQueue?.length){e.classList.remove("idle");t.textContent=`次: ${state.cpuActionQueue[0]}`}else{e.classList.add("idle");t.textContent="待機中"}
+}
+
+const PLAYER_INSTANTS=new Set(["Abeyance","Intuition","Power Sink","Stroke of Genius"]);
+
+function resetPriority(owner="PLAYER",context=""){
+  state.priority=owner;
+  state.priorityContext=context||state.priorityContext||"";
+  state.priorityPassed={PLAYER:false,CPU:false};
+  renderPriorityUI();
+}
+function renderPriorityUI(){
+  const owner=document.getElementById("priorityOwner");
+  const ctx=document.getElementById("priorityContext");
+  if(owner) owner.textContent=state.priority||"PLAYER";
+  if(ctx) ctx.textContent=state.priorityContext||"";
+}
+function priorityAvailableToPlayer(){
+  return state.priority==="PLAYER" && !state.challengeOver;
+}
+function openInstantCaster(){
+  if(!priorityAvailableToPlayer()){
+    alert("現在はプレイヤーの優先権ではありません。");
+    return;
+  }
+  renderInstantCaster();
+  document.getElementById("instantCasterOverlay").style.display="flex";
+}
+function closeInstantCaster(){
+  document.getElementById("instantCasterOverlay").style.display="none";
+}
+function renderInstantCaster(){
+  const body=document.getElementById("instantCasterBody");
+  if(!body) return;
+  const inHand=[...new Set(state.hand.filter(n=>PLAYER_INSTANTS.has(n)))];
+  if(!inHand.length){
+    body.innerHTML='<div class="stack-empty">唱えられるインスタントが手札にありません。</div>';
+    return;
+  }
+  const descriptions={
+    "Abeyance":"1W / CPUの非マナ能力・インスタント応答をこのターン制限し、1枚引く",
+    "Intuition":"2U / ライブラリーから3枚選び、CPUが1枚を手札へ",
+    "Power Sink":"XU / スタック上の呪文を対象にする",
+    "Stroke of Genius":"X2U / 自分またはCPUにX枚ドロー"
+  };
+  body.innerHTML=inHand.map(n=>{
+    let disabled=false;
+    if(n==="Power Sink" && !getPendingStack().some(x=>x.controller==="CPU")) disabled=true;
+    return `<button class="instant-choice" ${disabled?"disabled":""} onclick="castInstantWithPriority('${n}')">
+      <img src="${playerCardImage(n)}" alt="${n}">
+      <span><b>${cardDisplayName(n)}</b>${descriptions[n]}</span>
+    </button>`;
+  }).join("");
+}
+function chooseCPUStackTarget(){
+  const targets=getPendingStack().filter(x=>x.controller==="CPU");
+  if(!targets.length) return null;
+  if(targets.length===1) return targets[0];
+  const rows=targets.map((x,i)=>`${i+1}: ${x.name}`).join("\n");
+  let p=parseInt(prompt(`対象にするCPU呪文を選択してください。\n${rows}`,"1"),10)-1;
+  if(!(p>=0&&p<targets.length)) return null;
+  return targets[p];
+}
+
+function castInstantWithPriority(name){
+  if(!priorityAvailableToPlayer()) return;
+  const idx=state.hand.indexOf(name);
+  if(idx<0) return;
+  snapshot();
+
+  if(name==="Power Sink"){
+    const target=chooseCPUStackTarget();
+    if(!target){undo();return;}
+    let x=parseInt(prompt(`《魔力消沈》のXを入力してください。\n対象: ${target.name}`,"1"),10);
+    if(isNaN(x)||x<0){undo();return;}
+    if(!payCost(x,{U:1})){undo();alert("XUを支払えません。");return;}
+    state.hand.splice(idx,1); state.storm++;state.spellsCast++;
+    pushStack("PLAYER","Power Sink","instant",`${target.name}を対象 / X=${x}`,{targetId:target.id,x});
+    log(`PLAYER: 《魔力消沈》X=${x} → ${target.name}`);
+  }else if(name==="Abeyance"){
+    if(!payCost(1,{W:1})){undo();alert("1Wを支払えません。");return;}
+    state.hand.splice(idx,1);state.storm++;state.spellsCast++;
+    pushStack("PLAYER","Abeyance","instant","CPUを対象");
+    log("PLAYER: 《中断》をスタックへ");
+  }else if(name==="Intuition"){
+    if(!payCost(2,{U:1})){undo();alert("2Uを支払えません。");return;}
+    state.hand.splice(idx,1);state.storm++;state.spellsCast++;
+    pushStack("PLAYER","Intuition","instant","");
+    log("PLAYER: 《直観》をスタックへ");
+  }else if(name==="Stroke of Genius"){
+    let x=parseInt(prompt("《天才のひらめき》のXを入力してください。","1"),10);
+    if(isNaN(x)||x<0){undo();return;}
+    if(!payCost(x+2,{U:1})){undo();alert("X2Uを支払えません。");return;}
+    const target=(prompt("対象: SELF / CPU","CPU")||"CPU").toUpperCase();
+    state.hand.splice(idx,1);state.storm++;state.spellsCast++;
+    pushStack("PLAYER","Stroke of Genius","instant",`${target} / X=${x}`,{x,result:target});
+    log(`PLAYER: 《天才のひらめき》X=${x} → ${target}`);
+  }
+
+  closeInstantCaster();
+  state.priority="CPU";
+  state.priorityPassed={PLAYER:false,CPU:false};
+
+  cpuPriorityResponse();
+  render();
+}
+
+function cpuPriorityResponse(){
+  if(state.priority!=="CPU" || state.challengeOver) return;
+  if(state.abeyanceActive){
+    state.priorityPassed.CPU=true;
+    state.priority="PLAYER";
+    renderPriorityUI();
+    return;
+  }
+  const top=getPendingStack()[0];
+  if(!top){
+    state.priorityPassed.CPU=true;
+    state.priority="PLAYER";
+    renderPriorityUI();
+    return;
+  }
+  // CPU can only counter PLAYER spells in this version.
+  if(top.controller==="PLAYER"){
+    const critical=["Abeyance","Intuition","Stroke of Genius","Power Sink","Mind Over Matter","Time Spiral","Windfall"];
+    if(state.cpu && state.cpu.hand.includes("Daze") && state.cpu.turn<=3 && Math.random()<0.45){
+      cpuUseDaze(top.name);
+      return;
+    }
+    if(critical.includes(top.name) && cpuCanForce()){
+      cpuUseForce(top.name);
+      return;
+    }
+  }
+  state.priorityPassed.CPU=true;
+  state.priority="PLAYER";
+  renderPriorityUI();
+}
+
+function passPriority(){
+  if(state?.mulligan?.active) return alert("マリガンを完了してください。");
+  if(state.challengeOver) return;
+  const who=state.priority||"PLAYER";
+  state.priorityPassed[who]=true;
+
+  if(who==="PLAYER"){
+    state.priority="CPU";
+    cpuPriorityResponse();
+  }else{
+    state.priority="PLAYER";
+  }
+
+  if(state.priorityPassed.PLAYER && state.priorityPassed.CPU){
+    if(getPendingStack().length){
+      resolveTopOfStackWithEffects();
+      checkStateBasedActions("スタック解決後");
+      state.priorityPassed={PLAYER:false,CPU:false};
+      state.priority="PLAYER";
+      if(!getPendingStack().length&&state.cpuTurnActive&&state.cpuPhase==="main1"){if(cpuRunNextQueuedAction()){render();return;}}
+    }else{
+      continueAfterPriorityWindow();
+    }
+  }
+  render();
+}
+
+function resolvePriorityWindowAutomatically(){
+  state.priorityPassed.PLAYER=true;
+  state.priority="CPU";
+  cpuPriorityResponse();
+  // If CPU didn't add anything and both effectively pass, resolve.
+  if(state.priorityPassed.CPU && getPendingStack().length){
+    resolveTopOfStackWithEffects();
+    state.priorityPassed={PLAYER:false,CPU:false};
+    state.priority="PLAYER";
+  }
+}
+
+function resolvePlayerInstantEffect(item){
+  if(item.name==="Abeyance"){
+    state.abeyanceActive=true;
+    draw(1,false);
+    state.graveyard.push("Abeyance");
+    finishStackItem(item,"resolved","CPUの非マナ能力・インスタント応答をこのターン制限");
+    log("《中断》解決: 1枚ドロー、CPUの応答を制限");
+    return;
+  }
+
+  if(item.name==="Intuition"){
+    if(state.library.length<3){
+      state.graveyard.push("Intuition");
+      finishStackItem(item,"resolved","ライブラリー不足");
+      return;
+    }
+    const picks=[];
+    for(let k=0;k<3;k++){
+      const rows=state.library.slice(0,Math.min(state.library.length,20)).map((n,i)=>`${i+1}: ${cardDisplayName(n)}`).join("\n");
+      let p=parseInt(prompt(`《直観》: ライブラリー上位20枚から候補${k+1}/3を選択\n${rows}`,"1"),10)-1;
+      if(!(p>=0&&p<Math.min(state.library.length,20))){p=0;}
+      picks.push(state.library.splice(p,1)[0]);
+    }
+    const value={"Mind Over Matter":100,"Time Spiral":95,"Windfall":88,"Stroke of Genius":85,"Tolarian Academy":82,
+      "Intuition":75,"Mana Vault":70,"Voltaic Key":62,"Scroll Rack":55,"Mox Diamond":48,"Lotus Petal":45};
+    const chosen=picks.map((n,i)=>[value[n]||20,i]).sort((a,b)=>a[0]-b[0])[0][1];
+    state.hand.push(picks[chosen]);
+    picks.forEach((n,i)=>{if(i!==chosen)state.graveyard.push(n);});
+    state.graveyard.push("Intuition");
+    state.library=shuffle(state.library);
+    finishStackItem(item,"resolved",`${cardDisplayName(picks[chosen])}を手札へ`);
+    log(`《直観》解決: CPUは ${cardDisplayName(picks[chosen])} を選択`);
+    return;
+  }
+
+  if(item.name==="Stroke of Genius"){
+    const x=item.x||0;
+    const target=(item.result||"CPU").toUpperCase();
+    if(target==="SELF"){
+      draw(x,false);
+      state.graveyard.push("Stroke of Genius");
+      finishStackItem(item,"resolved",`SELFに${x}枚`);
+    }else{
+      if(state.mode==="challenge"&&state.cpu){
+        const before=state.cpu.library.length;
+        cpuDraw(x);
+        if(before<x){
+          state.challengeOver=true;state.cpu.result="PLAYER WIN";
+          showChallengeResult(true,"Legacy UB Tempoに勝利しました！");
+        }
+      }
+      state.graveyard.push("Stroke of Genius");
+      finishStackItem(item,"resolved",`CPUに${x}枚`);
+    }
+    log(`《天才のひらめき》解決: ${target} に${x}枚`);
+    return;
+  }
+
+  if(item.name==="Power Sink"){
+    resolvePowerSinkItem(item);
+    return;
+  }
+
+  finishStackItem(item,"resolved");
+}
+
+function resolveTopOfStackWithEffects(){
+  const top=getPendingStack()[0];
+  if(!top) return null;
+
+  if(top.kind==="triggered ability"){
+    resolveTriggeredAbility(top);
+  }else if(top.kind==="activated ability"){
+    resolveActivatedAbility(top);
+  }else if(top.kind==="delayed triggered ability"){
+    resolveDelayedTrigger(top);
+  }else if(top.controller==="PLAYER" && PLAYER_INSTANTS.has(top.name)){
+    resolvePlayerInstantEffect(top);
+  }else if(top.controller==="CPU" && (top.name==="Force of Will"||top.name==="Daze")){
+    resolveCounterItem(top);
+  }else if(top.controller==="CPU" && top.kind==="spell" && CPU_STACK_SPELLS.has(top.name)){
+    resolveCPUStackSpell(top);
+  }else if(top.name==="Power Sink" && top.controller==="PLAYER"){
+    resolvePowerSinkItem(top);
+  }else{
+    finishStackItem(top,"resolved");
+  }
+
+  moveFinishedStackItemsToHistory();
+  return top;
+}
+
+function continueAfterPriorityWindow(){
+  if(state.cpuTurnActive && state.cpuPhase==="main1" && !getPendingStack().length){
+    if(cpuRunNextQueuedAction()) return;
+    if(cpuActivateKaito()) return;
+    if(cpuActivateBauble()) return;
+  }
+  if(state.cpuTurnActive && state.cpuPhase==="combat" && state.combat?.active){
+    advanceDetailedCombat();
+    return;
+  }
+  if(state.cpuTurnActive) advanceCPUPhase();
+}
+
+function getPendingStack(){
+  return (state.stack||[]).filter(x=>x.status==="pending");
+}
+function getStackItem(id){
+  return (state.stack||[]).find(x=>x.id===id) || (state.stackHistory||[]).find(x=>x.id===id);
+}
+function finishStackItem(item,status,note=""){
+  if(!item) return;
+  item.status=status;
+  if(note) item.note = item.note ? `${item.note} / ${note}` : note;
+}
+function moveFinishedStackItemsToHistory(){
+  if(!state.stackHistory) state.stackHistory=[];
+  const finished=(state.stack||[]).filter(x=>x.status!=="pending");
+  if(finished.length){
+    // Preserve actual resolution chronology.
+    state.stackHistory.unshift(...finished.map(x=>({...x,archived:true})));
+  }
+  state.stack=(state.stack||[]).filter(x=>x.status==="pending");
+  state.stackHistory=state.stackHistory.slice(0,24);
+  if(!state.stack.length) state.priority="PLAYER";
+  renderStackUI();
+}
+
+function cpuAvailableGenericMana(){
+  if(!state.cpu) return 0;
+  return state.cpu.battlefield.filter(x=>cpuLandNames.has(x.name)&&!x.tapped).length;
+}
+function cpuPayGenericForStack(x){
+  if(cpuAvailableGenericMana()<x) return false;
+  for(let i=0;i<x;i++) if(!cpuTapLand("any")) return false;
   return true;
+}
+
+function findPowerSinkInHand(){
+  return state.hand.indexOf("Power Sink");
+}
+function canRespondWithPowerSink(){
+  const i=findPowerSinkInHand();
+  if(i<0) return false;
+  // At minimum U plus X=0/1. Require one blue-producing mana in pool.
+  return (state.mana.U||0)>=1;
+}
+
+function castPowerSinkAsResponse(targetItem,forcedX=null){
+  if(!targetItem || targetItem.status!=="pending") return false;
+  const hi=findPowerSinkInHand();
+  if(hi<0){ alert("手札に《魔力消沈》がありません。"); return false; }
+
+  let x=forcedX;
+  if(x===null){
+    const maxGeneric=colors.reduce((s,c)=>s+state.mana[c],0)-1;
+    x=parseInt(prompt(`《魔力消沈》で ${targetItem.name} に応答します。\nXを入力してください。`,"1"),10);
+    if(isNaN(x)||x<0) return false;
+  }
+
+  snapshot();
+  if(!payCost(x,{U:1})){ undo(); alert(`X=${x} の《魔力消沈》を支払えません。`); return false; }
+
+  const realIndex=state.hand.indexOf("Power Sink");
+  if(realIndex<0){ undo(); return false; }
+  state.hand.splice(realIndex,1);
+  state.storm++;state.spellsCast++;
+
+  const ps=pushStack("PLAYER","Power Sink","instant",`${targetItem.name}を対象 / X=${x}`,{targetId:targetItem.id,x});
+  log(`PLAYER: 《魔力消沈》X=${x} → ${targetItem.name} に応答`);
+  render();
+  return ps;
+}
+
+function resolvePowerSinkItem(item){
+  const target=getStackItem(item.targetId);
+  if(!target || target.status!=="pending"){
+    finishStackItem(item,"resolved","対象不在");
+    state.graveyard.push("Power Sink");
+    log("《魔力消沈》: 対象が存在せず解決");
+    return;
+  }
+  const x=item.x||0;
+  const cpuCanPay=cpuAvailableGenericMana()>=x;
+  let pays=false;
+  if(x===0) pays=true;
+  else if(cpuCanPay){
+    // CPU prioritizes keeping Force/Daze if it protects a critical interaction.
+    const keepPriority=(target.name==="Force of Will"||target.name==="Daze");
+    pays=keepPriority && x<=2;
+  }
+  if(pays && cpuPayGenericForStack(x)){
+    finishStackItem(item,"resolved",`CPUが${x}マナ支払い`);
+    state.graveyard.push("Power Sink");
+    log(`《魔力消沈》X=${x}: CPUが支払い → ${target.name} はスタックに残る`);
+  }else{
+    finishStackItem(item,"resolved",`${target.name}を打ち消し`);
+    finishStackItem(target,"countered","Power Sinkにより打ち消し");if(target.controller==="CPU"&&target.kind==="spell")state.cpu.graveyard.push(target.name);
+    state.graveyard.push("Power Sink");
+    log(`《魔力消沈》X=${x}: ${target.name} を打ち消した`);
+  }
+}
+
+function resolveCounterItem(item){
+  const target=getStackItem(item.targetId);
+  if(!target || target.status!=="pending"){
+    finishStackItem(item,"resolved","対象不在");
+    log(`${item.name}: 対象不在で解決`);
+    return;
+  }
+
+  if(item.name==="Daze"){
+    let paid=false;
+    if(colors.reduce((s,c)=>s+state.mana[c],0)>=1){
+      if(confirm(`《Daze》を解決します。\n${target.name} を守るため追加で1マナ支払いますか？`)){
+        paid=payGeneric(1);
+      }
+    }
+    if(paid){
+      finishStackItem(item,"resolved","追加1マナ支払いにより打ち消し失敗");
+      log("《Daze》: 1マナ支払い → 対象は打ち消されない");
+    }else{
+      finishStackItem(item,"resolved");
+      finishStackItem(target,"countered","Dazeにより打ち消し");
+      log(`《Daze》: ${target.name} を打ち消した`);
+    }
+    return;
+  }
+
+  if(item.name==="Force of Will"){
+    finishStackItem(item,"resolved");
+    finishStackItem(target,"countered","Force of Willにより打ち消し");
+    log(`《Force of Will》: ${target.name} を打ち消した`);
+    return;
+  }
+
+  finishStackItem(item,"resolved");
+}
+
+function resolveTopOfStack(){
+  const pending=getPendingStack();
+  if(!pending.length) return null;
+  const top=pending[0];
+
+  if(top.name==="Power Sink" && top.controller==="PLAYER") resolvePowerSinkItem(top);
+  else if(top.controller==="CPU" && (top.name==="Force of Will"||top.name==="Daze")) resolveCounterItem(top);
+  else finishStackItem(top,"resolved");
+
+  moveFinishedStackItemsToHistory();
+  return top;
+}
+
+function resolveTopOfStackManual(){
+  const p=getPendingStack();
+  if(!p.length){ alert("スタックは空です。"); return; }
+  resolveTopOfStackWithEffects();
+  checkStateBasedActions("スタック解決後");
+  render();
+}
+
+function resolveStackFully(){
+  let guard=30;
+  while(getPendingStack().length && guard-->0){
+    const p=getPendingStack();
+    // Leave the original PLAYER spell pending; castSelected will perform its actual effect.
+    if(p.length===1 && p[0].controller==="PLAYER") break;
+    resolveTopOfStack();
+  }
+  render();
+}
+
+function respondWithPowerSinkFromViewer(){
+  const pending=getPendingStack();
+  if(!pending.length){alert("応答する対象がありません。");return;}
+  const target=pending[0];
+  if(target.controller!=="CPU"){alert("現在トップはCPUの呪文ではありません。");return;}
+  if(castPowerSinkAsResponse(target)) renderStackViewer();
+}
+
+function offerPowerSinkResponse(targetItem){
+  if(!targetItem || !canRespondWithPowerSink()) return false;
+  openStackViewer();
+  const use=confirm(`${targetItem.name} がスタックに積まれました。\n\n手札の《魔力消沈》で応答しますか？`);
+  if(!use) return false;
+  return !!castPowerSinkAsResponse(targetItem);
+}
+
+function setPhase(id,opts={}){
+  const idx=PHASES.findIndex(p=>p.id===id);
+  if(idx<0) return;
+  state.phase=id;state.phaseIndex=idx;
+  state.priorityContext=`あなたの${PHASES[idx].label}フェイズ`;
+  if(!opts.silent) log(`【PLAYER】${PHASES[idx].label}フェイズ`);
+  if(id==="untap"&&!opts.skipAction){
+    state.battlefield.forEach((p,i)=>{if(p.name!=="Mana Vault")setPermanentTapped(i,false,"アンタップ・ステップ");});
+  }
+  if(id==="upkeep"&&!opts.skipAction){
+    const tappedVaults=state.battlefield.filter(p=>p.name==="Mana Vault"&&p.tapped).length;
+    if(tappedVaults){state.life-=tappedVaults;log(`《魔力の櫃》: ${tappedVaults}点のダメージ`);}
+  }
+  if(id==="draw"&&!opts.skipAction){state.drawStepFirstDrawUsed=false;state.cpuActionQueue=[];state.cpuWaitingForStack=false;state.delayedTriggers=[];state.combatStep="idle";state.pendingTriggerBatch=[];state.kaitoUsedTurn=0;draw(1,false);}
+  render();
+}
+function goToPhase(id){
+  if(state?.mulligan?.active) return alert("マリガンを完了してください。");
+  if(getPendingStack().length){
+    openStackViewer();
+    return alert("未解決のスタックがあります。先にスタックを解決してください。");
+  }
+  const target=PHASES.findIndex(p=>p.id===id);
+  if(target<0) return;
+  // Backward phase jumping is UI navigation only; actions do not repeat.
+  const repeat=target<=state.phaseIndex;
+  setPhase(id,{skipAction:repeat});
+}
+function nextPhase(){
+  if(state?.mulligan?.active) return alert("マリガンを完了してください。");
+  if(state.challengeOver) return;
+  if(getPendingStack().length){
+    openStackViewer();
+    return alert("未解決のスタックがあります。先にスタックを解決してください。");
+  }
+  let ni=(state.phaseIndex??3)+1;
+  if(ni<PHASES.length){setPhase(PHASES[ni].id);return;}
+  completePlayerTurn();
+}
+function completePlayerTurn(){
+  if(getPendingStack().length){
+    openStackViewer();
+    return alert("未解決のスタックがあります。");
+  }
+  snapshot();
+  state.abeyanceActive=false;
+  colors.forEach(c=>state.mana[c]=0);
+  setPhase("end",{skipAction:true});
+  log("— Player turn complete —");
+  if(state.mode==="challenge"&&!state.challengeOver){
+    cpuTurnPhased();
+    return;
+  }
+  state.turn++;state.storm=0;state.landsPlayed=0;
+  setPhase("untap");
+  setPhase("upkeep");
+  setPhase("draw");
+  setPhase("main1",{skipAction:true});
+  resetPriority("PLAYER","あなたのメイン1");
+  render();
+}
+
+function stackPlayerSpell(name){
+  pushStack("PLAYER",name,"spell","あなたが唱えた呪文");
+}
+function resolvePlayerSpellStack(name){
+  markStack(name,"PLAYER","resolved");
+  archiveStack();
+}
+function counterPlayerSpellStack(name,by){
+  markStack(name,"PLAYER","countered",`${by}により打ち消し`);
+  archiveStack();
 }
 
 function cpuCounterAfterPaid(spellName){
@@ -1247,8 +2307,9 @@ function cpuCastCreature(){
     for(let k=0;k<cost;k++) if(!cpuTapLand(k===0?"B":"any")) ok=false;
     if(!ok) continue;
     state.cpu.hand.splice(i,1);
-    state.cpu.battlefield.push({name:n,tapped:false,summoning:true});
+    state.cpu.battlefield.push({name:n,tapped:false,summoning:true,damageMarked:0});
     log(`CPU: 《${n}》を展開`);
+    if(n==="Orcish Bowmasters") queueTriggeredAbilityAPNAP("Orcish Bowmasters","CPU","Bowmasters Trigger","ETB — PLAYERへ1点、その後amass Orcs 1");flushTriggerBatchAPNAP();
     return true;
   }
   return false;
@@ -1285,39 +2346,82 @@ function showChallengeResult(win,text){
   ov.style.display="flex";
 }
 
-function cpuCombat(){
-  if(!state.cpu) return;
-  let dmg=state.cpu.bowmasterTokens||0;
-  for(const p of state.cpu.battlefield){
-    if(cpuCreatureNames.has(p.name) && !p.summoning) dmg+=cpuCreaturePower(p.name);
-  }
-  if(dmg>0){
-    state.life-=dmg;
-    log(`CPU: 攻撃 → ${dmg}点ダメージ（あなた ${state.life}）`);
-  }
-  state.cpu.battlefield.forEach(p=>p.summoning=false);
-  if(state.life<=0){
-    state.challengeOver=true;
-    state.cpu.result="CPU WIN";
-    showChallengeResult(false,"Legacy UB Tempoに敗北しました。");
-  }
-}
+function cpuCombat(){startCombatStep();cpuChooseAttackers();autoDeclareBlocks();resolveCombatDamage();endCombatStep();}
 
 function cpuTurn(){
+  return cpuTurnPhased();
+}
+
+function cpuPhaseLog(id,label){
+  log(`【CPU】${label}フェイズ`);
+}
+function cpuTurnPhased(){
   if(state.mode!=="challenge"||!state.cpu||state.challengeOver) return;
   state.cpu.turn++;
   state.cpu.landPlayed=false;
-  cpuUntap();
-  cpuDraw(1);
-  log(`— CPU Turn ${state.cpu.turn} —`);
-  cpuPlayLand();
-  cpuUseWasteland();
-  cpuCastThoughtseize();
-  // Use remaining mana for pressure/card selection.
-  cpuCastCreature();
-  cpuCastCantrip();
-  cpuKaito();
-  cpuCombat();
+  state.cpuTurnActive=true;
+  state.cpuPhase="untap";
+  runCPUPhase("untap");
+}
+
+const CPU_PHASE_ORDER=["untap","upkeep","draw","main1","combat","main2","end"];
+
+function runCPUPhase(id){
+  if(state.challengeOver) return;
+  state.cpuPhase=id;
+  const labels={untap:"アンタップ",upkeep:"アップキープ",draw:"ドロー",main1:"メイン1",combat:"戦闘",main2:"メイン2",end:"終了"};
+  cpuPhaseLog(id,labels[id]);
+
+  if(id==="untap") cpuUntap();
+  else if(id==="upkeep"){
+    fireDelayedTriggersAPNAP("nextUpkeep");
+    if(getPendingStack().length){resetPriority("PLAYER","CPU アップキープの遅延誘発");render();return;}
+  }
+  else if(id==="draw") cpuDraw(1);
+  else if(id==="main1"){
+    cpuPlayLand();
+    if(cpuActivateWasteland()) return;
+    state.cpuActionQueue=cpuQueueMainPhaseActions();
+    if(cpuRunNextQueuedAction()) return;
+  }else if(id==="combat"){
+    startDetailedCombat();
+    return;
+  }else if(id==="end"){
+    resetCombatDamageMarks();checkStateBasedActions("終了ステップ");
+    log(`— CPU Turn ${state.cpu.turn} complete —`);
+  }
+
+  // Give player priority after each CPU phase action window.
+  resetPriority("PLAYER",`CPU ${labels[id]}フェイズ`);
+  log(`優先権 → PLAYER（CPU ${labels[id]}）`);
+  render();
+
+  // For untap there is normally no priority, advance immediately.
+  if(id==="untap"){
+    state.priorityPassed.PLAYER=true;
+    state.priorityPassed.CPU=true;
+    continueAfterPriorityWindow();
+  }
+}
+
+function advanceCPUPhase(){
+  if(!state.cpuTurnActive) return;
+  const i=CPU_PHASE_ORDER.indexOf(state.cpuPhase);
+  if(i<0) return;
+  if(i===CPU_PHASE_ORDER.length-1){
+    state.cpuTurnActive=false;
+    state.cpuPhase="";
+    state.turn++;state.storm=0;state.landsPlayed=0;
+    setPhase("untap");
+    setPhase("upkeep");
+    setPhase("draw");
+    setPhase("main1",{skipAction:true});
+    resetPriority("PLAYER","あなたのメイン1");
+    log(`— Player Turn ${state.turn} / Main 1 —`);
+    render();
+    return;
+  }
+  runCPUPhase(CPU_PHASE_ORDER[i+1]);
 }
 
 function startSoloMode(){
@@ -1488,11 +2592,270 @@ function mobilePrimaryAction(){
 
 function initialState(){
   return {
-    turn:1,life:20,storm:0,library:[],hand:[],battlefield:[],graveyard:[],exile:[],mode:"solo",cpu:null,challengeOver:false,
+    turn:1,life:20,storm:0,library:[],hand:[],battlefield:[],graveyard:[],exile:[],mode:"solo",cpu:null,challengeOver:false,phase:"main1",phaseIndex:3,stack:[],stackHistory:[],priority:"PLAYER",stackSeq:0,priorityContext:"あなたのメインフェイズ",priorityPassed:{PLAYER:false,CPU:false},cpuTurnActive:false,cpuPhase:"",combat:{active:false,attackers:[],blockers:{},damageResolved:false},triggerQueue:[],sbaLast:"OK",drawStepFirstDrawUsed:false,cpuActionQueue:[],cpuWaitingForStack:false,delayedTriggers:[],combatStep:"idle",pendingTriggerBatch:[],kaitoUsedTurn:0,
     mana:{W:0,U:0,B:0,R:0,G:0,C:0},landsPlayed:0,handPage:1,
     oppLibrary:53,oppHand:7,oppGraveyard:0,oppMana:0,abeyanceActive:false,spellsCast:0,cardsDrawn:0,cardsDiscarded:0,
-    maxStorm:0,maxMana:0,maxHand:7,winTurn:0,log:[]
+    maxStorm:0,maxMana:0,maxHand:7,winTurn:0,log:[],
+    mulligan:{
+      active:false,round:1,playerCount:0,cpuCount:0,
+      playerKept:false,cpuKept:false,playerBottomRequired:0,
+      playerBottomSelection:[],cpuLastDecision:""
+    }
   };
+}
+
+
+function openingDrawPlayer7(){
+  state.hand=[];
+  for(let i=0;i<7 && state.library.length;i++) state.hand.push(state.library.shift());
+  state.handPage=1;
+}
+function openingDrawCPU7(){
+  state.cpu.hand=[];
+  for(let i=0;i<7 && state.cpu.library.length;i++) state.cpu.hand.push(state.cpu.library.shift());
+}
+
+function startMulliganProcedure(){
+  state.mulligan={
+    active:true,round:1,playerCount:0,cpuCount:0,
+    playerKept:false,cpuKept:state.mode!=="challenge",
+    playerBottomRequired:0,playerBottomSelection:[],cpuLastDecision:""
+  };
+  openMulliganOverlay();
+  renderMulligan();
+}
+
+function openMulliganOverlay(){
+  const o=document.getElementById("mulliganOverlay");
+  if(o) o.style.display="flex";
+}
+function closeMulliganOverlay(){
+  const o=document.getElementById("mulliganOverlay");
+  if(o) o.style.display="none";
+}
+
+function cpuOpeningHandScore(hand){
+  let landsN=0, blue=0, black=0, interaction=0, threats=0, cantrip=0, dead=0;
+  for(const n of hand){
+    if(cpuLandNames.has(n)){
+      landsN++;
+      if(["Underground Sea","Island","Undercity Sewers"].includes(n)) blue++;
+      if(["Underground Sea","Swamp","Undercity Sewers"].includes(n)) black++;
+    }
+    if(["Force of Will","Daze","Thoughtseize"].includes(n)) interaction++;
+    if(["Moonshadow","Nethergoyf","Orcish Bowmasters","Kaito, Bane of Nightmares"].includes(n)) threats++;
+    if(["Brainstorm","Ponder","Mishra's Bauble"].includes(n)) cantrip++;
+    if(["Fatal Push","Snuff Out"].includes(n)) dead++;
+  }
+  let score=0;
+  if(landsN===0) score-=100;
+  else if(landsN===1) score += cantrip>0 ? 7 : -8;
+  else if(landsN>=2 && landsN<=4) score+=25;
+  else if(landsN===5) score+=4;
+  else score-=30;
+  score += interaction*7 + threats*5 + cantrip*3;
+  if(blue>0) score+=4;
+  if(black>0) score+=4;
+  score -= dead*3;
+  return score;
+}
+function cpuShouldMulligan(){
+  if(!state.cpu || state.mulligan.cpuKept) return false;
+  const m=state.mulligan.cpuCount;
+  if(m>=7) return false;
+  const score=cpuOpeningHandScore(state.cpu.hand);
+  const threshold = m===0 ? 23 : m===1 ? 16 : m===2 ? 9 : m===3 ? 3 : -8;
+  return score < threshold;
+}
+function cpuBottomValue(name){
+  const values={
+    "Force of Will":95,"Daze":82,"Thoughtseize":80,
+    "Orcish Bowmasters":75,"Nethergoyf":72,"Moonshadow":68,
+    "Brainstorm":66,"Ponder":64,"Mishra's Bauble":58,
+    "Underground Sea":62,"Polluted Delta":59,"Island":57,"Swamp":54,
+    "Undercity Sewers":52,"Wasteland":48,
+    "Bloodstained Mire":50,"Flooded Strand":50,"Marsh Flats":50,"Misty Rainforest":50,"Scalding Tarn":50,
+    "Kaito, Bane of Nightmares":45,"Flow State":38,
+    "Fatal Push":12,"Snuff Out":8
+  };
+  return values[name] ?? 30;
+}
+function cpuChooseBottomCards(count){
+  if(!state.cpu || count<=0) return;
+  for(let k=0;k<count && state.cpu.hand.length;k++){
+    let worst=0;
+    for(let i=1;i<state.cpu.hand.length;i++){
+      if(cpuBottomValue(state.cpu.hand[i]) < cpuBottomValue(state.cpu.hand[worst])) worst=i;
+    }
+    const card=state.cpu.hand.splice(worst,1)[0];
+    state.cpu.library.push(card);
+  }
+}
+function cpuTakeMulligan(){
+  state.mulligan.cpuCount++;
+  state.cpu.library=shuffle([...state.cpu.library,...state.cpu.hand]);
+  state.cpu.hand=[];
+  openingDrawCPU7();
+  cpuChooseBottomCards(state.mulligan.cpuCount);
+}
+function cpuResolveDeclarationForRound(){
+  if(state.mode!=="challenge" || state.mulligan.cpuKept) return "KEEP";
+  const take=cpuShouldMulligan();
+  if(take){
+    state.mulligan.cpuLastDecision="MULLIGAN";
+    cpuTakeMulligan();
+    return "MULLIGAN";
+  }
+  state.mulligan.cpuKept=true;
+  state.mulligan.cpuLastDecision="KEEP";
+  return "KEEP";
+}
+function cpuFinishMulligansAfterPlayerKeeps(){
+  if(state.mode!=="challenge") return;
+  let guard=0;
+  while(!state.mulligan.cpuKept && guard++<8){
+    if(cpuShouldMulligan()){
+      cpuTakeMulligan();
+    }else{
+      state.mulligan.cpuKept=true;
+    }
+  }
+  if(!state.mulligan.cpuKept) state.mulligan.cpuKept=true;
+}
+
+function playerTakeMulligan(){
+  if(!state.mulligan?.active || state.mulligan.playerKept) return;
+  if(state.mulligan.playerBottomRequired>0) return alert("先に戻すカードを選択してください。");
+  if(state.mulligan.playerCount>=7){
+    return alert("これ以上マリガンできません。");
+  }
+
+  const cpuDecision = cpuResolveDeclarationForRound();
+
+  state.mulligan.playerCount++;
+  state.library=shuffle([...state.library,...state.hand]);
+  state.hand=[];
+  openingDrawPlayer7();
+  state.mulligan.playerBottomRequired=state.mulligan.playerCount;
+  state.mulligan.playerBottomSelection=[];
+
+  state.mulligan.round++;
+  state.mulligan.cpuLastDecision = state.mode==="challenge" ? cpuDecision : "";
+  renderMulligan();
+}
+function playerKeepOpening(){
+  if(!state.mulligan?.active || state.mulligan.playerKept) return;
+  if(state.mulligan.playerBottomRequired>0){
+    return alert("マリガンで戻すカードを先に確定してください。");
+  }
+
+  state.mulligan.playerKept=true;
+  if(state.mode==="challenge"){
+    cpuResolveDeclarationForRound();
+    cpuFinishMulligansAfterPlayerKeeps();
+  }
+  finishMulliganProcedure();
+}
+function toggleMulliganBottom(index){
+  if(!state.mulligan?.active || state.mulligan.playerBottomRequired<=0) return;
+  const a=state.mulligan.playerBottomSelection;
+  const p=a.indexOf(index);
+  if(p>=0) a.splice(p,1);
+  else if(a.length<state.mulligan.playerBottomRequired) a.push(index);
+  renderMulligan();
+}
+function confirmMulliganBottom(){
+  const need=state.mulligan.playerBottomRequired;
+  const sel=[...state.mulligan.playerBottomSelection];
+  if(sel.length!==need) return alert(`${need}枚選択してください。`);
+
+  sel.sort((a,b)=>b-a);
+  const bottom=[];
+  for(const idx of sel){
+    if(idx>=0 && idx<state.hand.length) bottom.push(state.hand.splice(idx,1)[0]);
+  }
+  // User-selected ordering: selected cards are put on bottom in the displayed selection order.
+  bottom.reverse().forEach(c=>state.library.push(c));
+
+  state.mulligan.playerBottomRequired=0;
+  state.mulligan.playerBottomSelection=[];
+  if(state.mulligan.playerCount>=7){
+    state.mulligan.playerKept=true;
+    if(state.mode==="challenge") cpuFinishMulligansAfterPlayerKeeps();
+    finishMulliganProcedure();
+    return;
+  }
+  renderMulligan();
+}
+function finishMulliganProcedure(){
+  state.mulligan.active=false;
+  closeMulliganOverlay();
+  state.maxHand=state.hand.length;
+  if(state.mode==="challenge"){
+    state.oppHand=state.cpu.hand.length;
+    state.oppLibrary=state.cpu.library.length;
+    log(`マリガン完了 — YOU ${state.mulligan.playerCount}回 / CPU ${state.mulligan.cpuCount}回`);
+    log("UB Tempo Challenge 開始 — あなたが先手（第1ターンのドローなし）");
+  }else{
+    log(`マリガン完了 — ${state.mulligan.playerCount}回 / 開始手札${state.hand.length}枚`);
+    log("新しい一人回しゲーム開始 — 先手第1ターン");
+  }
+  resetPriority("PLAYER","あなたのメイン1");
+  render();
+}
+function renderMulligan(){
+  const m=state.mulligan;
+  if(!m?.active) return;
+  const hand=document.getElementById("mulliganHand");
+  const pc=document.getElementById("playerMullCount");
+  const cc=document.getElementById("cpuMullCount");
+  const cpuBox=document.getElementById("cpuMullBox");
+  const status=document.getElementById("cpuMulliganStatus");
+  const need=document.getElementById("mulliganNeedBottom");
+  const info=document.getElementById("mulliganSelectionInfo");
+  const keep=document.getElementById("mulliganKeepBtn");
+  const mull=document.getElementById("mulliganAgainBtn");
+  const bottom=document.getElementById("mulliganBottomBtn");
+  const subtitle=document.getElementById("mulliganSubtitle");
+
+  if(pc) pc.textContent=m.playerCount;
+  if(cc) cc.textContent=m.cpuCount;
+  if(cpuBox) cpuBox.style.display=state.mode==="challenge"?"block":"none";
+  if(subtitle) subtitle.textContent=`ロンドン・マリガン / 現在 ${state.hand.length}枚`;
+
+  const selecting=m.playerBottomRequired>0;
+  if(need){
+    need.style.display=selecting?"block":"none";
+    need.textContent=selecting ? `この手札7枚から ${m.playerBottomRequired}枚 を選び、ライブラリーの一番下へ置いてください。` : "";
+  }
+  if(info){
+    info.textContent=selecting ? `選択 ${m.playerBottomSelection.length} / ${m.playerBottomRequired}` :
+      (m.playerCount===0 ? "この7枚をキープするか、マリガンします。" : `現在の開始手札は${state.hand.length}枚です。キープするか、もう一度マリガンします。`);
+  }
+
+  if(hand){
+    hand.innerHTML=state.hand.map((n,i)=>{
+      const selected=m.playerBottomSelection.includes(i);
+      return `<div class="mulligan-card ${selected?"selected-bottom":""}" onclick="toggleMulliganBottom(${i})">
+        <img src="${cardImageUrl(n)}" alt="${cardDisplayName(n)}">
+        <div class="mulligan-card-name">${cardDisplayName(n)}</div>
+      </div>`;
+    }).join("");
+  }
+
+  if(keep) keep.style.display=selecting?"none":"inline-block";
+  if(mull) {
+    mull.style.display=selecting?"none":"inline-block";
+    mull.disabled=m.playerCount>=7;
+  }
+  if(bottom) bottom.style.display=selecting?"inline-block":"none";
+
+  if(status){
+    if(state.mode!=="challenge") status.textContent="";
+    else if(m.cpuLastDecision==="MULLIGAN") status.textContent=`CPUもマリガンしました（${m.cpuCount}回目）。CPU手札は非公開です。`;
+    else if(m.cpuLastDecision==="KEEP") status.textContent=`CPUはキープしました。CPU開始手札 ${state.cpu.hand.length}枚。`;
+    else status.textContent="CPU手札は非公開です。あなたからマリガン宣言を行います。";
+  }
 }
 
 function makeDeck(){
@@ -1522,18 +2885,39 @@ function updateStats(){
   state.maxHand=Math.max(state.maxHand,state.hand.length);
 }
 function newGame(mode="solo"){
-  state=initialState(); state.mode=mode; undoState=null; selected={zone:null,index:null}; closeCardDetail();
+  state=initialState();
+  state.mode=mode;
+  undoState=null;
+  selected={zone:null,index:null};
+  closeCardDetail();
+
   state.library=makeDeck();
-  for(let i=0;i<7;i++) draw(1,false);
+  state.phase="main1";
+  state.phaseIndex=3;
+  state.stack=[];
+  state.stackHistory=[];
+  state.stackSeq=0;
+  state.priority="PLAYER";
+  state.priorityContext="マリガン中";
+  state.priorityPassed={PLAYER:false,CPU:false};
+  state.cpuTurnActive=false;
+  state.cpuPhase="";
+  state.combat={active:false,attackers:[],blockers:{},damageResolved:false};
+  state.triggerQueue=[];
+  state.sbaLast="OK";
+  state.drawStepFirstDrawUsed=false;
+
+  openingDrawPlayer7();
+
   if(mode==="challenge"){
     cpuOpening();
-    log("UB Tempo Challenge 開始 — あなたが先手");
-  }else{
-    log("新しい一人回しゲーム開始");
   }
+
+  startMulliganProcedure();
   render();
 }
 function draw(n=1,doSnap=true){
+  if(state?.mulligan?.active) return alert("マリガンを完了してください。");
   if(doSnap) snapshot();
   let c=0;
   for(let i=0;i<n;i++){
@@ -1643,6 +3027,7 @@ function untapUpToSixLands(){
 }
 
 function playSelected(){
+  if(state?.mulligan?.active) return alert("マリガンを完了してください。");
   if(selected.zone!=="hand") return alert("手札からカードを選択してください。");
   const idx=selected.index;
   const name=state.hand[idx];
@@ -1659,6 +3044,7 @@ function playSelected(){
     return alert(`《${cardDisplayName(name)}》のマナ・コストを支払えません。`);
   }
 
+  stackPlayerSpell(name);
   if(cpuCounterAfterPaid(name)) return sendPlayerSpellToGraveAsCountered(idx,name);
 
   if(name==="Mox Diamond"){
@@ -1757,6 +3143,7 @@ function chooseColor(valid=["W","U","B","R","G"],def="U"){
 }
 
 function activateSelected(){
+  if(state?.mulligan?.active) return alert("マリガンを完了してください。");
   if(selected.zone!=="battlefield") return alert("戦場からカードを選択してください。");
   const p=state.battlefield[selected.index];
   const n=p.name;
@@ -1862,6 +3249,9 @@ function activateSelected(){
 
 
 function sendPlayerSpellToGraveAsCountered(idx,n){
+  const stk=(state.stack||[]).find(x=>x.name===n&&x.controller==="PLAYER"&&x.status==="pending");
+  if(stk) finishStackItem(stk,"countered","CPUの打ち消しにより打ち消された");
+  moveFinishedStackItemsToHistory();
   if(state.hand[idx]===n) state.hand.splice(idx,1);
   else{
     const i=state.hand.indexOf(n);
@@ -1875,9 +3265,11 @@ function sendPlayerSpellToGraveAsCountered(idx,n){
 }
 
 function castSelected(){
+  if(state?.mulligan?.active) return alert("マリガンを完了してください。");
   if(selected.zone!=="hand") return alert("手札の呪文を選択してください。");
   const idx=selected.index,n=state.hand[idx];
   snapshot();
+  if(!artifacts.has(n)) stackPlayerSpell(n);
 
   if(n==="Mind Over Matter"){
     if(!payCost(2,{U:4})){undo();return alert("《精神力》のコスト 2UUUU を支払えません。");}
@@ -1921,18 +3313,26 @@ function castSelected(){
     state.library=shuffle(state.library);
     log(`《直観》: ${cardDisplayName(names[pick])}を手札、残り2枚を墓地へ`);
   }else if(n==="Power Sink"){
+    const cpuPending=(state.stack||[]).find(x=>x.controller==="CPU"&&x.status==="pending");
     const x=parseInt(prompt("《魔力消沈》のXを入力してください。","1"),10);
     if(isNaN(x)||x<0){undo();return;}
+    if(cpuPending){
+      // Remove the automatically-created generic PLAYER Power Sink stack entry,
+      // then cast it as a targeted response using the shared resolver.
+      const generic=(state.stack||[]).find(x=>x.controller==="PLAYER"&&x.name==="Power Sink"&&x.status==="pending");
+      if(generic) state.stack=state.stack.filter(x=>x.id!==generic.id);
+      if(!payCost(x,{U:1})){undo();return alert("《魔力消沈》のコスト XU を支払えません。");}
+      state.hand.splice(idx,1);state.storm++;state.spellsCast++;
+      pushStack("PLAYER","Power Sink","instant",`${cpuPending.name}を対象 / X=${x}`,{targetId:cpuPending.id,x});
+      resolveTopOfStack();
+      render();
+      return;
+    }
     if(!payCost(x,{U:1})){undo();return alert("《魔力消沈》のコスト XU を支払えません。");}
     if(cpuCounterAfterPaid(n)) return sendPlayerSpellToGraveAsCountered(idx,n);
     state.hand.splice(idx,1); state.graveyard.push(n);
     state.storm++; state.spellsCast++;
-    const result=(prompt("相手はXを支払いますか？ PAY / NOPAY","NOPAY")||"NOPAY").toUpperCase();
-    if(result==="PAY") log(`《魔力消沈》X=${x}: 相手が支払い、対象呪文は解決`);
-    else{
-      state.oppMana=0;
-      log(`《魔力消沈》X=${x}: 対象呪文を打ち消し、相手の土地タップ／マナ消去を処理した扱い`);
-    }
+    log(`《魔力消沈》X=${x}: 対戦相手のスタック呪文がないため、抽象処理として解決`);
   }else if(n==="Time Spiral"){
     if(!payCost(4,{U:2})){undo();return alert("《時のらせん》のコスト 4UU を支払えません。");}
     if(cpuCounterAfterPaid(n)) return sendPlayerSpellToGraveAsCountered(idx,n);
@@ -2004,6 +3404,7 @@ function castSelected(){
     undoState=null; return alert("このカードの専用処理はありません。");
   }
 
+  if(!artifacts.has(n)) resolvePlayerSpellStack(n);
   selected={zone:null,index:null}; closeCardDetail(); normalizePage(); render();
 }
 
@@ -2013,28 +3414,9 @@ function untapStep(){
   log("アンタップ・ステップ"); render();
 }
 function endTurn(){
-  snapshot();
-  state.abeyanceActive=false;
-  colors.forEach(c=>state.mana[c]=0);
-
-  if(state.mode==="challenge" && !state.challengeOver){
-    cpuTurn();
-    if(state.challengeOver){render();return;}
-  }
-
-  state.turn++; state.storm=0; state.landsPlayed=0;
-  state.battlefield.forEach((p,i)=>{if(p.name!=="Mana Vault")setPermanentTapped(i,false,"アンタップ・ステップ");});
-  const tappedVaults=state.battlefield.filter(p=>p.name==="Mana Vault"&&p.tapped).length;
-  if(tappedVaults){
-    state.life-=tappedVaults;
-    log(`《魔力の櫃》: ドロー・ステップに${tappedVaults}点のダメージ`);
-  }
-  draw(1,false);
-  log(`— Player Turn ${state.turn} —`);
-  if(state.life<=0 && state.mode==="challenge"){
-    state.challengeOver=true;state.cpu.result="CPU WIN";
-  }
-  render();
+  if(state?.mulligan?.active) return alert("マリガンを完了してください。");
+  state.phaseIndex=6;state.phase="end";
+  completePlayerTurn();
 }
 
 function saveState(){
@@ -2140,6 +3522,7 @@ function playCardFromGesture(zone,index){
 }
 
 function render(){
+  if(state?.mulligan?.active) renderMulligan();
   updateStats();
   const manaTotal=colors.reduce((s,c)=>s+state.mana[c],0);
   const stats=[
@@ -2160,10 +3543,15 @@ function render(){
       ];
       document.getElementById("cpuStats").innerHTML=cs.map(([k,v])=>`<div class="cpu-stat">${k}<b class="${k==="RESULT"?"challenge-result":""}">${v}</b></div>`).join("");
       document.getElementById("cpuBattlefield").innerHTML=state.cpu.battlefield.map(p=>{
-        const cls=cpuCreatureNames.has(p.name)?"creature":cpuLandNames.has(p.name)?"land":"";
-        return `<span class="cpu-card ${cls}">${p.name}${p.tapped?" ↷":""}</span>`;
+        return `<div class="cpu-card-img ${p.tapped?"tapped":""}" title="${p.name}">
+          <img src="${cpuCardImage(p.name)}" alt="${p.name}" onerror="this.src='card-back.jpg'">
+          <div class="cpu-card-name">${p.name}${p.tapped?" ↷":""}</div>
+        </div>`;
       }).join("")||'<span style="color:#64748b">— empty —</span>';
-      document.getElementById("cpuGraveyard").innerHTML=state.cpu.graveyard.slice(-14).reverse().map(n=>`<span class="cpu-card">${n}</span>`).join("")||'<span style="color:#64748b">— empty —</span>';
+      document.getElementById("cpuGraveyard").innerHTML=state.cpu.graveyard.slice(-14).reverse().map(n=>`<div class="cpu-card-img" title="${n}">
+        <img src="${cpuCardImage(n)}" alt="${n}" onerror="this.src='card-back.jpg'">
+        <div class="cpu-card-name">${n}</div>
+      </div>`).join("")||'<span style="color:#64748b">— empty —</span>';
 
       const cpuLifeBig=document.getElementById("cpuLifeBig");
       const cpuLibraryBig=document.getElementById("cpuLibraryBig");
@@ -2178,6 +3566,11 @@ function render(){
   }
   const playerLifeBig=document.getElementById("playerLifeBig");
   if(playerLifeBig) playerLifeBig.textContent=state.life;
+  document.querySelectorAll("#phaseStrip button[data-phase]").forEach((b,i)=>{
+    b.classList.toggle("phase-active",b.dataset.phase===state.phase);
+    b.classList.toggle("phase-complete",i<(state.phaseIndex??3));
+  });
+  renderStackUI();
 
   document.getElementById("battlefield").innerHTML=state.battlefield.map((p,i)=>
     imageCardHtml(p.name,"battlefield",i,p.tapped?"tapped":"")
@@ -2231,6 +3624,80 @@ newGame();
 })();
 </script>
 
+
+
+
+
+<div id="mulliganOverlay" class="mulligan-overlay" style="display:none">
+  <div class="mulligan-window">
+    <div class="mulligan-head">
+      <div>
+        <div class="side-label">CURRENT MULLIGAN RULE</div>
+        <h2>オープニング・ハンド</h2>
+        <div id="mulliganSubtitle" class="mulligan-subtitle">ロンドン・マリガン</div>
+      </div>
+      <div class="mulligan-counts">
+        <div><span>YOU</span><strong id="playerMullCount">0</strong></div>
+        <div id="cpuMullBox"><span>CPU</span><strong id="cpuMullCount">0</strong></div>
+      </div>
+    </div>
+
+    <div class="mulligan-rule-note">
+      2人対戦：開始手札は7枚。マリガンするたび引き直し、そのゲームで行ったマリガン回数ぶんをライブラリーの一番下へ置きます。
+    </div>
+
+    <div id="mulliganNeedBottom" class="mulligan-bottom-note" style="display:none"></div>
+    <div id="mulliganHand" class="mulligan-hand"></div>
+
+    <div id="mulliganSelectionInfo" class="mulligan-selection-info"></div>
+
+    <div class="mulligan-actions">
+      <button id="mulliganKeepBtn" class="green" onclick="playerKeepOpening()">キープ</button>
+      <button id="mulliganAgainBtn" class="red" onclick="playerTakeMulligan()">マリガン</button>
+      <button id="mulliganBottomBtn" class="blue" style="display:none" onclick="confirmMulliganBottom()">選択したカードを下へ</button>
+    </div>
+
+    <div id="cpuMulliganStatus" class="cpu-mulligan-status"></div>
+  </div>
+</div>
+
+<div id="instantCasterOverlay" class="stack-overlay" style="display:none">
+  <div class="stack-window">
+    <div class="stack-window-head">
+      <div>
+        <div class="side-label">PLAYER PRIORITY</div>
+        <h2>インスタントを唱える</h2>
+      </div>
+      <button onclick="closeInstantCaster()">×</button>
+    </div>
+    <div id="instantCasterBody" class="instant-caster-body"></div>
+    <div class="stack-help">
+      現在の優先権で唱えられるMoMAのインスタントを表示します。
+      《魔力消沈》はスタック上の呪文がある場合に対象を選びます。
+    </div>
+  </div>
+</div>
+
+<div id="stackOverlay" class="stack-overlay" style="display:none">
+  <div class="stack-window">
+    <div class="stack-window-head">
+      <div>
+        <div class="side-label">PRIORITY / STACK</div>
+        <h2>スタック確認</h2>
+      </div>
+      <button onclick="closeStackViewer()">×</button>
+    </div>
+    <div class="stack-priority-actions">
+      <button class="cyan" onclick="resolveTopOfStackManual()">トップを解決</button>
+      <button class="purple" onclick="respondWithPowerSinkFromViewer()">Power Sinkで応答</button>
+    </div>
+    <div id="stackViewerBody" class="stack-viewer-body"></div>
+    <div class="stack-help">
+      上にある項目ほど後からスタックに積まれています。実際の解決順は上から下です。<br>
+      Challenge版ではCPUの《Daze》《Force of Will》などの応答をここへ記録します。
+    </div>
+  </div>
+</div>
 
 <div id="challengeOverlay" class="challenge-overlay" style="display:none">
   <div class="challenge-overlay-card">
